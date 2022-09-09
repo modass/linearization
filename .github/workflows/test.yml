@@ -47,7 +47,7 @@ jobs:
     - if: ${{ steps.cache-dependencies.outputs.cache-hit != 'true' }}
       name: Set branches for dependencies
       working-directory: ${{runner.workspace}}/dependencies
-      run: cd carl && && git checkout 3b0c79a68a && cd ../hypro && git checkout alpha
+      run: cd carl && git checkout 3b0c79a68a && cd ../hypro && git checkout alpha
 
     - name: Dependencies - CArL
       working-directory: ${{runner.workspace}}/dependencies/carl
