@@ -32,7 +32,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-build-
 
-    
+
     - if: ${{ steps.cache-dependencies.outputs.cache-hit != 'true' }}
       name: Create Dependencies Environment
       shell: bash
@@ -40,15 +40,23 @@ jobs:
       run: cmake -E make_directory ${{runner.workspace}}/dependencies
 
     - if: ${{ steps.cache-dependencies.outputs.cache-hit != 'true' }}
-      name: Dependencies - CArL
+      name: Download dependencies
       working-directory: ${{runner.workspace}}/dependencies
-      run:  git clone https://github.com/ths-rwth/carl && cd carl &&  git checkout 3b0c79a68a && mkdir build && cd build &&  cmake .. && make carl -j $(nproc)
-    
+      run: git clone https://github.com/ths-rwth/carl && git clone https://github.com/hypro/hypro
+
     - if: ${{ steps.cache-dependencies.outputs.cache-hit != 'true' }}
-      name: Dependencies - HyPro
+      name: Set branches for dependencies
       working-directory: ${{runner.workspace}}/dependencies
-      run: git clone https://github.com/hypro/hypro && cd hypro &&  git checkout alpha && mkdir build && cd build && cmake .. && make hypro -j $(nproc)
-      
+      run: cd carl && && git checkout 3b0c79a68a && cd ../hypro && git checkout alpha
+
+    - name: Dependencies - CArL
+      working-directory: ${{runner.workspace}}/dependencies/carl
+      run: mkdir -p build && cd build && cmake .. && make carl -j $(nproc)
+
+    - name: Dependencies - HyPro
+      working-directory: ${{runner.workspace}}/dependencies/hypro
+      run: mkdir -p build && cd build && cmake .. && make hypro -j $(nproc)
+
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
