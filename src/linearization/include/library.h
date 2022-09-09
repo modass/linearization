@@ -1,0 +1,6 @@
+#ifndef LINEARIZATION_LIBRARY_H
+#define LINEARIZATION_LIBRARY_H
+
+void hello();
+
+#endif//LINEARIZATION_LIBRARY_H
