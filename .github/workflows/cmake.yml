@@ -20,6 +20,12 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: Dependencies - CArL
+      run:  git clone https://github.com/ths-rwth/carl && cd carl &&  git checkout 3b0c79a68a && mkdir build && cd build &&  cmake .. && make carl -j$(nproc)
+    
+    - name: Dependencies - HyPro
+      run: git clone https://github.com/hypro/hypro && cd hypro && mkdir build && cd build && cmake .. && make hypro -j$(nproc)
+      
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
