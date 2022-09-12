@@ -1,5 +1,6 @@
 # Linearization
 [![Test](https://github.com/modass/linearization/actions/workflows/test.yml/badge.svg)](https://github.com/modass/linearization/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/modass/linearization/branch/main/graph/badge.svg?token=AFETV8HB0D)](https://codecov.io/gh/modass/linearization)
 
 This is the project repository for the linerarization project using Carleman linearization.
 
