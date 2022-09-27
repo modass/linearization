@@ -6,7 +6,6 @@
 
 using namespace std;
 
-
 int main() {
     double XL, XU, YL, YU;	
     XL=-1;
