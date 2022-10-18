@@ -14,37 +14,20 @@
 // Created by Stefan Schupp on 17.10.22.
 //
 
-#ifndef LINEARIZATION_MCCORMICK_H
-#define LINEARIZATION_MCCORMICK_H
+#ifndef LINEARIZATION_EXCEPTIONS_H
+#define LINEARIZATION_EXCEPTIONS_H
 
-#include <functional>
-#include <hypro/representations/GeometricObjectBase.h>
-#include <utility/Exceptions.h>
+#include <stdexcept>
 
-namespace linearization
+namespace utility
 {
 
-/*
- * Class that wraps mcpp
- */
-class MCCormick
+struct NotImplemented : public std::logic_error
 {
-public:
-    explicit MCCormick(std::function<double()>&& dynamics)
-        : mDynamics(std::move(dynamics))
-    {
-    }
-
-    /**
-     * Computes a polytope over-approximating a function within a given interval
-     * @return The polytope
-     */
-    hypro::HPolytope<double> linearize() const;
-
-private:
-    std::function<double()> mDynamics;
+    NotImplemented(std::string msg = "")
+        : std::logic_error("Function " + msg + " not implemented yet"){};
 };
 
-} // namespace linearization
+} // namespace utility
 
-#endif // LINEARIZATION_MCCORMICK_H
+#endif // LINEARIZATION_EXCEPTIONS_H

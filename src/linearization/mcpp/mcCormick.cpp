@@ -16,6 +16,12 @@
 
 #include "mcpp/mcCormick.h"
 
-namespace linearization {
+namespace linearization
+{
+
+hypro::HPolytope<double> MCCormick::linearize() const
+{
+    throw utility::NotImplemented();
+}
 
 } // namespace linearization
