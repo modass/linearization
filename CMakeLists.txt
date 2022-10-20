@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 option(COVERAGE "Enable to produce coverage reports" OFF)
 
+add_subdirectory(src/analysis)
 add_subdirectory(src/linearization)
 add_subdirectory(src/utility)
 add_subdirectory(src/tool)
