@@ -1,11 +1,12 @@
 add_executable(
-        gtest_test
-        test_gtest.cpp
+        analysis_test
+        analysis/test_analysis.cpp
 )
 target_link_libraries(
-        gtest_test
+        analysis_test
+        analysis
         GTest::gtest_main
 )
 
 include(GoogleTest)
-gtest_discover_tests(gtest_test)
+gtest_discover_tests(analysis_test)
