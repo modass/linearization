@@ -9,26 +9,19 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef LINEARIZATION_LIBRARY_H
-#define LINEARIZATION_LIBRARY_H
+/*
+ * Created by Stefan Schupp <stefan.schupp@tuwien.ac.at> on 20.10.22.
+ */
 
-class MCpp {
-  public:
-	MCpp( double XLi, double XUi, double YLi, double YUi );
-	void setXBounds( int xl, int xu );
-	void setYBounds(int yl, int yu);
-int getXBounds(); 
-int getYBounds();
-void setNX(int nx);
-void setNY(int ny);
-int getNX();
-int getNY();
-int do_relaxations(); 
+#ifndef LINEARIZATION_SETTINGS_H
+#define LINEARIZATION_SETTINGS_H
 
-private:
-double XL, XU, YL, YU;
-int NX,NY;
-double sum1,sum2;
-  };
-#endif//LINEARIZATION_LIBRARY_H
+namespace linearization {
 
+/// Settings for the linearization-method
+struct Settings {
+};
+
+}  // namespace linearization
+
+#endif	// LINEARIZATION_SETTINGS_H

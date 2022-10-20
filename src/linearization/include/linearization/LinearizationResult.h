@@ -7,21 +7,26 @@
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
- *
  */
 
-//
-// Created by Stefan Schupp on 17.10.22.
-//
+/*
+ * Created by Stefan Schupp <stefan.schupp@tuwien.ac.at> on 20.10.22.
+ */
 
-#include "mcpp/mcCormick.h"
+#ifndef LINEARIZATION_LINEARIZATIONRESULT_H
+#define LINEARIZATION_LINEARIZATIONRESULT_H
 
-namespace linearization
-{
+#include <hypro/datastructures/HybridAutomaton/Condition.h>
+#include <hypro/datastructures/HybridAutomaton/HybridAutomaton.h>
 
-hypro::HPolytope<double> MCCormick::linearize() const
-{
-    throw utility::NotImplemented();
-}
+namespace linearization {
 
-} // namespace linearization
+template <typename Number>
+struct LinearizationResult {
+	hypro::Condition<Number> initialCondition;	///< Polyhedral description of the linearized initial set
+	hypro::HybridAutomaton<Number> dynamics;	///< Single-location automaton which holds the linearized dynamics
+};
+
+}  // namespace linearization
+
+#endif	// LINEARIZATION_LINEARIZATIONRESULT_H

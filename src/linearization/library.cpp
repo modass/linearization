@@ -1,17 +1,28 @@
-#include <iostream>
-#include <iostream>
-#include <random>
-#include <stdlib.h>
+/*
+ * Copyright (c) 2022 Stefan Schupp.
+ * This file is part of the linearization project.
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#include "../linearization/include/library.h"
+
+#include "../../include/interval.hpp"
+#include "../../include/mccormick.hpp"
+#include "boost/tuple/tuple.hpp"
+
 #include <cmath>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <vector>
+#include <random>
+#include <stdlib.h>
 #include <string>
-#include "boost/tuple/tuple.hpp"
-#include "../../include/interval.hpp"
-#include "../../include/mccormick.hpp"
-#include "../linearization/include/library.h"
+#include <vector>
 
 #define TEST_TRIG	
 #define SAVE_RESULTS    
