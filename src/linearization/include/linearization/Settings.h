@@ -16,10 +16,19 @@
 #ifndef LINEARIZATION_SETTINGS_H
 #define LINEARIZATION_SETTINGS_H
 
+#include <hypro/util/adaptions_carl/adaptions_includes.h>
+#include <vector>
+
 namespace linearization {
 
 /// Settings for the linearization-method
 struct Settings {
+	std::vector<carl::Interval<double>> domain;	 ///< The domain over which to linearize
+	std::vector<std::size_t> subdivisions;		 ///< The subdivisions for each dimension used for higher precision
+
+	bool isValid() const {
+		return domain.size() == subdivisions.size();
+	}
 };
 
 }  // namespace linearization
