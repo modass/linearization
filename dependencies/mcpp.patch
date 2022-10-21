@@ -1,0 +1,4 @@
+3775c3775
+< template <> template<typename T> struct Op< mc::McCormick<T> >
+---
+> template<typename T> struct Op< mc::McCormick<T> >
