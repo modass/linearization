@@ -21,27 +21,15 @@
 
 #include <functional>
 #include <utility/Exceptions.h>
+#include <
 
 namespace linearization {
 
-/*
- * Class that wraps mcpp
- */
-class MCCormick {
-  public:
-	explicit MCCormick( std::function<double()>&& dynamics,
-						const Settings& settings )
-		: mDynamics( std::move( dynamics ) )
-		, mSettings( settings ) {
-	}
-
-	LinearizationResult<double> linearize() const;
-
-  private:
-	std::function<double()> mDynamics;	///< Function-object that describes the non-linear dynamics
-	Settings mSettings;					///< Settings of the linearization approach
-};
+template <typename Function>
+LinearizationResult<double> linearize( const Function& dynamics, const Settings& settings );
 
 }  // namespace linearization
+
+#include "mcCormick.tpp"
 
 #endif	// LINEARIZATION_MCCORMICK_H

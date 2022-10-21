@@ -11,10 +11,9 @@
 
 #include "../linearization/include/library.h"
 
-#include "../../include/interval.hpp"
-#include "../../include/mccormick.hpp"
-#include "boost/tuple/tuple.hpp"
-
+#include <MCpp/include/interval.hpp>
+#include <MCpp/include/mccormick.hpp>
+#include <boost/tuple/tuple.hpp>
 #include <cmath>
 #include <fstream>
 #include <iomanip>
@@ -24,11 +23,10 @@
 #include <string>
 #include <vector>
 
-#define TEST_TRIG	
-#define SAVE_RESULTS    
-#undef USE_PROFIL	
+#define TEST_TRIG
+#define SAVE_RESULTS
+#undef USE_PROFIL
 #undef USE_FILIB
-
 
 using namespace std;
 using boost::tuple;

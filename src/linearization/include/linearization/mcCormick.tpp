@@ -13,13 +13,18 @@
 // Created by Stefan Schupp on 17.10.22.
 //
 
-#include "linearization/mcCormick.h"
+#include "mcCormick.h"
 
 namespace linearization
 {
 
-LinearizationResult<double> MCCormick::linearize() const {
+template <typename Function>
+LinearizationResult<double> linearize( const Function& dynamics, const Settings& settings ) {
+	using Interval = mc::Interval;
+	using MC = mc::McCormick<Interval>;
+
 	LinearizationResult<double> res;
+
 	throw utility::NotImplemented();
 	return res;
 }
