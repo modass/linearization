@@ -27,18 +27,20 @@ namespace analysis
  * Class that wraps reachability analysis for linear hybrid systems implemented
  * in HyPro
  */
-template<typename Representation>
-class Analyzer
-{
-    using Number = typename Representation::NumberType;
-public:
-    /**
-     * Performs reachability analysis
-     */
-    void run();
+template <typename Representation, typename Dynamics>
+class Analyzer {
+	using Number = typename Representation::NumberType;
 
-protected:
-    hypro::HybridAutomaton<Number> mAutomaton;
+  public:
+	/// Constructor from an automaton and a set of initial valuations
+	Analyzer( Dynamics&& dynamics, const std::vector<hypro::Condition<Number>>& initialValuations );
+	/// Performs the analysis
+	void run();
+
+  protected:
+	Dynamics mDynamics;
+	std::vector<hypro::Condition<Number>> mInitialConditions;
+	hypro::HybridAutomaton<Number> mAutomaton;
 };
 
 } // namespace analysis

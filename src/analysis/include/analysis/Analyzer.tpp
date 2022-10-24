@@ -17,10 +17,20 @@
 
 namespace analysis {
 
-template<typename Representation>
-void Analyzer<Representation>::run()
-{
-    auto reacher = hypro::reachability::Reach<Representation>(mAutomaton);
+template <typename Representation, typename Dynamics>
+Analyzer<Representation, Dynamics>::Analyzer( Dynamics&& dynamics, const std::vector<hypro::Condition<Number>>& initialValuations )
+	: mDynamics( std::move( dynamics ) )
+	, mInitialConditions( initialValuations ) {
 }
 
-} // namespace analysis
+template <typename Representation, typename Dynamics>
+void Analyzer<Representation, Dynamics>::run() {
+	// create linearization
+
+	// build automaton from linearization
+
+	// perform reachability analysis
+	auto reacher = hypro::reachability::Reach<Representation>( mAutomaton );
+}
+
+}  // namespace analysis

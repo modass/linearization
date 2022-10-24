@@ -19,6 +19,8 @@
 
 // Demonstrate some basic assertions.
 TEST( AnalysisTest, Construction ) {
-	auto analyzer = analysis::Analyzer<hypro::Box<double>>();
+	std::function<double( double )> dynamics;
+	std::vector<hypro::Condition<double>> initialConditions;
+	auto analyzer = analysis::Analyzer<hypro::Box<double>, decltype( dynamics )>( std::move( dynamics ), initialConditions );
 	SUCCEED();
 }
