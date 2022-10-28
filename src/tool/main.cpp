@@ -9,7 +9,9 @@ using namespace std;
 int main() {
     double XL, XU, YL, YU;	
     XL=-1;
-    XU=1;   
+    XU=1;  
+    
+    //Generation of a grid to subdivide the initial interval [XL,XU]\times[YL,YU] into subintervals to improve the accuracy of computed approximations.
     int Xspace=2;
     double Xstep=(XU-XL)/Xspace;
     cout << "-" << Xstep << "-" << endl;
@@ -29,8 +31,11 @@ int main() {
         arY.push_back(YL+i*Ystep);
         cout << arY[i] << " ";
     }
+    
+    //variables used to save the extremes of each subinterval.
     double xa,xb,ya,yb;
     
+    //Compute the McCormick envelopes for each subinterval.
     for (int i = 1; i < arY.size(); i++) {
         ya=arY[i-1];
         yb=arY[i];
@@ -44,8 +49,3 @@ int main() {
 
     return 0;
 }
-
-
-
-
-
