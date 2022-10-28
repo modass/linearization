@@ -8,37 +8,41 @@
  *
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
-#include "../linearization/include/library.h"
-
-#include <MCpp/include/interval.hpp>
-#include <MCpp/include/mccormick.hpp>
-#include <boost/tuple/tuple.hpp>
+#include <iostream>
+#include <iostream>
+#include <random>
+#include <stdlib.h>
 #include <cmath>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <random>
-#include <stdlib.h>
-#include <string>
 #include <vector>
+#include <string>
+#include "boost/tuple/tuple.hpp"
+#include "../../include/interval.hpp"
+#include "../../include/mccormick.hpp"
+#include "../linearization/include/library.h"
 
-#define TEST_TRIG
-#define SAVE_RESULTS
-#undef USE_PROFIL
+#define TEST_TRIG	
+#define SAVE_RESULTS    
+#undef USE_PROFIL	
 #undef USE_FILIB
+
 
 using namespace std;
 using boost::tuple;
 using namespace mc;
 
+//supporting interval bounds are calculated using the default interval type mc::Interval here:
 typedef mc::Interval I;
 typedef mc::McCormick<I> MC;
 
+//extremes of the intervals for the x and y variables.
 double XL, XU, YL, YU;
+//MSE for the concave and convex relaxation.
 double sum1,sum2;
 
-
+//definition of the function to be approximated.
 template <class T>
 T myfunc
 ( const T&x, const T&y )
@@ -47,7 +51,7 @@ T myfunc
 }
 
 
-
+//constructor.
 MCpp::MCpp(double XLi, double XUi, double YLi, double YUi){
 XL=XLi; XU=XUi; YL=YLi; YU=YUi;
 NX=50;
@@ -58,7 +62,7 @@ std::cout <<XU<< '\n';
 }
 
 
-
+// getters and setters
 void MCpp::setNX(int nx){
     NX = nx;
 } 
@@ -102,25 +106,33 @@ double min=10000000000000000;
 double x_ref = 0;
 double y_ref = 0;
 
+//MC++ library options
+// provides tighter McCormick relaxations, but it is more time consuming.
 MC::options.ENVEL_USE=true;
+//maximum number of iterations for determination function points in convex/concave envelopes of univariate terms.
 MC::options.ENVEL_MAXIT=100;
+//tolerance for determination function points in convex/concave envelopes of univariate terms.
 MC::options.ENVEL_TOL=1e-12;
+//it indicates to use Tsoukalas & Mitsos's multivariate composition result for min/max, product, and division terms(more time consuming).
 MC::options.MVCOMP_USE=true;
 
-
+//output file
 ofstream allsub( "MC-2D.out", ios_base::app);
 allsub << scientific << setprecision(5) << right;
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------CONVEX RELAXATION  UNDERESTIMATING THE INITIAL NONLINEAR FUNCTION myfunc-----------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-//--------------------------------CONVEX RELAXATION
-
-
+//we try 10 linearization points and then choose the one that minimizes the MSE between the affine approximation and McCormick relaxation at NX fixed points.
 for (int i = 0; i < 10; ++i){
     std::random_device rd;  
     std::mt19937 gen(rd()); 
+    
+/*set the point for which to compute the affine approximation (linearization point=(x_ref,y_ref)), sampling from a uniform distribution. The support for the considered uniform distribution is equal 
+to the initial interval given for each coordinate.*/
     std::uniform_real_distribution<> disX(XL, XU);
     x_ref=disX(gen);
-   
     std::uniform_real_distribution<> disY(YL, YU);
     y_ref=disY(gen);
     
@@ -129,33 +141,51 @@ for (int i = 0; i < 10; ++i){
 
     Xref=x_ref;
     Yref=y_ref;
+    
+    //Xrel and Yrel are variables of type McCormick, belonging to the interval [XL,XU] and [YL,YU] respectively, with current value is Xref and Yref.
     MC Xrel( I(XL,XU), Xref );
     MC Yrel( I(YL,YU), Yref );
+    
+    //Defining Xrel and Yrel as the subgradient components 0 and 1, respectively. 
     Xrel.sub(2,0);
     Yrel.sub(2,1);
+    
+    //McCormick relaxations of function myfunct on [XL,XU]\times[YL,YU] at (Xrel, Yrel):
     MC Zref = myfunc( Xrel, Yrel );
     cout << "Relaxation at reference point:\n" << Zref << endl;
 
 
    try{ 
-
+   
+    //compute the McCormick relaxations in NX points
     for( int iX=0; iX<NX; iX++ ){ 
       for( int iY=0; iY<NY; iY++ ){
-
+        
+        //set the coordinates of the points in which to compute the approximation, relying on NX and on the size of the initial intervals for each variable.
         double Xval = XL+iX*(XU-XL)/(NX-1.);
         double Yval = YL+iY*(YU-YL)/(NY-1.);
         double Zval = myfunc( Xval, Yval );
-
+        
+        //define Xrel and Yrel as variables of type McCormick, belonging to the interval [XL,XU] and [YL,YU] respectively, with current value is Xval and Yval. 
         MC Xrel( I(XL,XU), Xval );
         MC Yrel( I(YL,YU), Yval );
-
+        
+        //Defining Xrel and Yrel as the subgradient components 0 and 1, respectively. 
         Xrel.sub(2,0);
         Yrel.sub(2,1);
+        //compute the McCormick convex and concave relaxations of myfunc at (Xrel,Yrel) along with subgradients of these relaxations.
         MC Zrel = myfunc( Xrel, Yrel );
 
+       //The linearization point is chosen so that the distances between the MmcCormick relaxations and the affine approximation (computed in the sampled points) are minimized.
+       //Here we update the partial sum for MSE computation, in particular we compute the difference between: 
+       // - Zrel.cv(), that is the value of the McCormick convex relaxation at (Xval,Yval), and
+       // - (Zref.cv()+Zref.cvsub(1)*(Yval-Yref)+Zref.cvsub(0)*(Xval-Xref)), that is the affine approximation generated using linearization point (Xref,Yref) and computed in (Xval,Yval)
         sum1 =sum1+pow(Zrel.cv()-(Zref.cv()+Zref.cvsub(1)*(Yval-Yref)+Zref.cvsub(0)*(Xval-Xref)),2);
       }}
+    //takes the root to compute the MSE.
     sum1=sqrt(sum1);
+    
+    /*if the MSE obtained generating the affine approximation at the current linearization point leads to a lower MSE than the minimum obtained so far, then updates the final linearization point and the minimum MSE.*/
     if (sum1<min) {
     Xref_v=Xref;
     Yref_v=Yref;
@@ -183,8 +213,11 @@ for (int i = 0; i < 10; ++i){
   sum1=0;
   }
   
-//-------------------------------- CONCAVE RELAXATION
-  
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------CONCAVE RELAXATION  OVERESTIMATING THE INITIAL NONLINEAR FUNCTION myfunc---------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+//this code exactly mirrors the convex case  
   sum2=0;
   min=10000000000000000;
 
@@ -255,17 +288,27 @@ for (int i = 0; i < 10; ++i){
   sum2=0;
   }  
 
-  //------------------------FINAL 
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//--------------Here we save the results in the output file and compute the affine approximations corresponding to the concave and convex envelope for the chosen linearization points-------------
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------  
+  
+ /*
+ For each point at which we evaluate the function and the McCormick approximation, we also evaluate the affine approximation computed for the linearization point that minimizes the error made with respect to the mccormcick envelope
+ */ 
+ 
   std::cout << "final:"<< Xref_c << '\n';
   std::cout << "final:"<< Yref_c << '\n';
 
+  //compute the McCormick relaxation at the linearization point used for the affine underestimation.
   MC Xrel_c( I(XL,XU), Xref_c );
   MC Yrel_c( I(YL,YU), Yref_c );
   Xrel_c.sub(2,0);
   Yrel_c.sub(2,1);
   MC Zref_c = myfunc( Xrel_c, Yrel_c );
   cout << "Relaxation at reference point:\n" << Zref_c << endl;
- 
+
+  //compute the McCormick relaxation at the linearization point used for the affine overestimation.
   MC Xrel_v( I(XL,XU), Xref_v );
   MC Yrel_v( I(YL,YU), Yref_v );
   Xrel_v.sub(2,0);
@@ -290,6 +333,7 @@ for (int i = 0; i < 10; ++i){
         Yrel.sub(2,1);
         MC Zrel = myfunc( Xrel, Yrel );
 
+        //print the coordinates of the points in which we are approximating the original function: Xval,Yval, the real value of the function at (Xval,Yval): Zval, the McCormick cancave and convex relaxation at  (Xval,Yval): Zrel.cc(),Zrel.cv(), and the values assumed by the affine over and under-approximation in (Xval,Yval).
         allsub << setw(14) << Xval << setw(14) << Yval << setw(14) << Zval
                << setw(14) << Zrel.l() << setw(14) <<  Zrel.u()
                << setw(14) << Zrel.cv() << setw(14) << Zrel.cc()
@@ -324,5 +368,4 @@ for (int i = 0; i < 10; ++i){
 allsub.close();
 return 0;
   }
-
   
