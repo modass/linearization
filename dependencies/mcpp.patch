@@ -1,4 +1,432 @@
-3775c3775
-< template <> template<typename T> struct Op< mc::McCormick<T> >
----
-> template<typename T> struct Op< mc::McCormick<T> >
+diff --git a/MCpp/examples/MC-1D/main.cpp b/MCpp/examples/MC-1D/main.cpp
+index 7a24913..c820bd3 100644
+--- a/MCpp/examples/MC-1D/main.cpp
++++ b/MCpp/examples/MC-1D/main.cpp
+@@ -97,8 +97,8 @@ T myfunc
+ }
+ 
+ #elif defined( TEST_TRIG )
+-const double XL   = -PI;	// <-- range lower bound
+-const double XU   =  PI/3.;	// <-- range upper bound
++const double XL   = -mc_PI;	// <-- range lower bound
++const double XU   =  mc_PI/3.;	// <-- range upper bound
+ const double Xref =  0.;	// <-- linearization point
+ template <class T>
+ T myfunc
+@@ -108,9 +108,9 @@ T myfunc
+ }
+ 
+ #elif defined( TEST_TRIG2 )
+-const double XL   =  PI/6.;	// <-- range lower bound
+-const double XU   =  PI/3.;	// <-- range upper bound
+-const double Xref =  PI/4.;	// <-- linearization point
++const double XL   =  mc_PI/6.;	// <-- range lower bound
++const double XU   =  mc_PI/3.;	// <-- range upper bound
++const double Xref =  mc_PI/4.;	// <-- linearization point
+ template <class T>
+ T myfunc
+ ( const T&x )
+diff --git a/MCpp/examples/TM-1D/main.cpp b/MCpp/examples/TM-1D/main.cpp
+index a860694..f1c0326 100644
+--- a/MCpp/examples/TM-1D/main.cpp
++++ b/MCpp/examples/TM-1D/main.cpp
+@@ -63,8 +63,8 @@ T myfunc
+ 
+ #elif defined( TEST_TRIG )
+ const double XL   =  0.;	// <-- range lower bound
+-const double XU   =  PI/3.;	// <-- range upper bound
+-const double Xref =  PI/4.;	// <-- linearization point
++const double XU   =  mc_PI/3.;	// <-- range upper bound
++const double Xref =  mc_PI/4.;	// <-- linearization point
+ template <class T>
+ T myfunc
+ ( const T&x )
+@@ -73,9 +73,9 @@ T myfunc
+ }
+ 
+ #elif defined( TEST_TRIG2 )
+-const double XL   = PI/6.;	// <-- X range lower bound
+-const double XU   = PI/3.;	// <-- X range upper bound
+-const double Xref = PI/4.;	// <-- X ref point for McCormick
++const double XL   = mc_PI/6.;	// <-- X range lower bound
++const double XU   = mc_PI/3.;	// <-- X range upper bound
++const double Xref = mc_PI/4.;	// <-- X ref point for McCormick
+ template <class T>
+ T myfunc
+ ( const T&x )
+diff --git a/MCpp/src/mc/interval.hpp b/MCpp/src/mc/interval.hpp
+index 0538192..0327954 100644
+--- a/MCpp/src/mc/interval.hpp
++++ b/MCpp/src/mc/interval.hpp
+@@ -744,25 +744,25 @@ inline Interval
+ cos
+ ( const Interval&I )
+ {
+-  const int k = std::ceil(-(1.+I._l/PI)/2.); // -pi <= xL+2*k*pi < pi
+-  const double l = I._l+2.*PI*k, u = I._u+2.*PI*k;
++  const int k = std::ceil(-(1.+I._l/mc_PI)/2.); // -pi <= xL+2*k*pi < pi
++  const double l = I._l+2.*mc_PI*k, u = I._u+2.*mc_PI*k;
+   if( l <= 0 ){
+     if( u <= 0 ){
+       Interval I2( std::cos(l), std::cos(u) );
+       return I2;
+     }
+-    if( u >= PI ){
++    if( u >= mc_PI ){
+       Interval I2( -1., 1. );
+       return I2;
+     }
+     Interval I2( std::min(std::cos(l), std::cos(u)), 1. );
+     return I2;
+   }
+-  if( u <= PI ){
++  if( u <= mc_PI ){
+     Interval I2( std::cos(u), std::cos(l) );
+     return I2;
+   }
+-  if( u >= 2.*PI ){
++  if( u >= 2.*mc_PI ){
+     Interval I2( -1., 1. );
+     return I2;
+   }
+@@ -774,16 +774,16 @@ inline Interval
+ sin
+ ( const Interval &I )
+ {
+-  return cos( I - PI/2. );
++  return cos( I - mc_PI/2. );
+ }
+ 
+ inline Interval
+ tan
+ ( const Interval&I )
+ {
+-  const int k = std::ceil(-0.5-I._l/PI); // -pi/2 <= xL+k*pi < pi/2
+-  const double l = I._l+PI*k, u = I._u+PI*k;
+-  if( u >= 0.5*PI ) throw Interval::Exceptions( Interval::Exceptions::TAN );
++  const int k = std::ceil(-0.5-I._l/mc_PI); // -pi/2 <= xL+k*pi < pi/2
++  const double l = I._l+mc_PI*k, u = I._u+mc_PI*k;
++  if( u >= 0.5*mc_PI ) throw Interval::Exceptions( Interval::Exceptions::TAN );
+   Interval I2( std::tan(l), std::tan(u) );
+   return I2;
+ }
+diff --git a/MCpp/src/mc/mccormick.hpp b/MCpp/src/mc/mccormick.hpp
+index 4bb133a..022bb8c 100644
+--- a/MCpp/src/mc/mccormick.hpp
++++ b/MCpp/src/mc/mccormick.hpp
+@@ -930,7 +930,7 @@ private:
+   //! @brief Compute concave envelope of cos terms
+   static double* _coscc
+     ( const double x, const double xL, const double xU );
+-  //! @brief Compute convex envelope of cos terms in [-PI,PI]
++  //! @brief Compute convex envelope of cos terms in [-mc_PI,mc_PI]
+   static double* _coscv2
+     ( const double x, const double xL, const double xU );
+   //! @brief Compute residual value for junction points in the envelope of cos terms
+@@ -1737,7 +1737,7 @@ McCormick<T>::_erfcv
+ {
+   static double cv[2];
+   if( xU <= 0. ){	 // convex part
+-    cv[0] = ::erf(x), cv[1] = 2./std::sqrt(PI)*std::exp(-sqr(x));
++    cv[0] = ::erf(x), cv[1] = 2./std::sqrt(mc_PI)*std::exp(-sqr(x));
+     return cv;
+   }
+ 
+@@ -1755,7 +1755,7 @@ McCormick<T>::_erfcv
+     xj = _goldsect( xL, 0., _erfenv_func, &xU, 0 );
+   }
+   if( x <= xj ){	 // convex part
+-    cv[0] = ::erf(x), cv[1] = 2./std::sqrt(PI)*std::exp(-sqr(x));
++    cv[0] = ::erf(x), cv[1] = 2./std::sqrt(mc_PI)*std::exp(-sqr(x));
+     return cv;
+   }
+   double r = ( isequal( xj, xU )? 0.:(::erf(xU)-::erf(xj))/(xU-xj) );
+@@ -1775,7 +1775,7 @@ McCormick<T>::_erfcc
+   }
+ 
+   if( xL >= 0. ){	 // concave part
+-    cc[0] = ::erf(x), cc[1] = 2./std::sqrt(PI)*std::exp(-sqr(x));
++    cc[0] = ::erf(x), cc[1] = 2./std::sqrt(mc_PI)*std::exp(-sqr(x));
+     return cc;
+   }
+ 
+@@ -1787,7 +1787,7 @@ McCormick<T>::_erfcc
+     xj = _goldsect( 0., xU, _erfenv_func, &xL, 0 );
+   }
+   if( x >= xj ){	 // concave part
+-    cc[0] = ::erf(x), cc[1] = 2./std::sqrt(PI)*std::exp(-sqr(x));
++    cc[0] = ::erf(x), cc[1] = 2./std::sqrt(mc_PI)*std::exp(-sqr(x));
+     return cc;
+   }
+   double r = ( isequal( xj, xL )? 0.:(::erf(xL)-::erf(xj))/(xL-xj) );
+@@ -1800,7 +1800,7 @@ McCormick<T>::_erfenv_func
+ ( const double x, const double*rusr, const int*iusr )
+ {
+   // f(z) = (z-a)*exp(-z^2)-sqrt(pi)/2.*(erf(z)-erf(a)) = 0
+-  return (x-*rusr)*std::exp(-sqr(x))-std::sqrt(PI)/2.*(::erf(x)-::erf(*rusr));
++  return (x-*rusr)*std::exp(-sqr(x))-std::sqrt(mc_PI)/2.*(::erf(x)-::erf(*rusr));
+ }
+ 
+ template <typename T> inline double
+@@ -2024,18 +2024,18 @@ McCormick<T>::_cosarg
+ ( const double xL, const double xU )
+ {
+   static double arg[2];
+-  const int kL = std::ceil(-(1.+xL/PI)/2.);
+-  const double xL1 = xL+2.*PI*kL, xU1 = xU+2.*PI*kL;
+-  assert( xL1 >= -PI && xL1 <= PI );
++  const int kL = std::ceil(-(1.+xL/mc_PI)/2.);
++  const double xL1 = xL+2.*mc_PI*kL, xU1 = xU+2.*mc_PI*kL;
++  assert( xL1 >= -mc_PI && xL1 <= mc_PI );
+   if( xL1 <= 0 ){
+     if( xU1 <= 0 ) arg[0] = xL, arg[1] = xU;
+-    else if( xU1 >= PI ) arg[0] = PI*(1.-2.*kL), arg[1] = -PI*2.*kL;
+-    else arg[0] = std::cos(xL1)<=std::cos(xU1)?xL:xU, arg[1] = -PI*2.*kL;
++    else if( xU1 >= mc_PI ) arg[0] = mc_PI*(1.-2.*kL), arg[1] = -mc_PI*2.*kL;
++    else arg[0] = std::cos(xL1)<=std::cos(xU1)?xL:xU, arg[1] = -mc_PI*2.*kL;
+     return arg;
+   }
+-  if( xU1 <= PI ) arg[0] = xU, arg[1] = xL;
+-  else if( xU1 >= 2.*PI ) arg[0] = PI*(1-2.*kL), arg[1] = 2.*PI*(1.-kL);
+-  else arg[0] = PI*(1.-2.*kL), arg[1] = std::cos(xL1)>=std::cos(xU1)?xL:xU;
++  if( xU1 <= mc_PI ) arg[0] = xU, arg[1] = xL;
++  else if( xU1 >= 2.*mc_PI ) arg[0] = mc_PI*(1-2.*kL), arg[1] = 2.*mc_PI*(1.-kL);
++  else arg[0] = mc_PI*(1.-2.*kL), arg[1] = std::cos(xL1)>=std::cos(xU1)?xL:xU;
+   return arg;
+ }
+ 
+@@ -2044,30 +2044,30 @@ McCormick<T>::_coscv
+ ( const double x, const double xL, const double xU )
+ {
+   static double cv[2];
+-  const int kL = std::ceil(-(1.+xL/PI)/2.);
+-  if( x <= PI*(1-2*kL) ){
+-    const double xL1 = xL+2.*PI*kL;
+-    if( xL1 >= 0.5*PI ){
++  const int kL = std::ceil(-(1.+xL/mc_PI)/2.);
++  if( x <= mc_PI*(1-2*kL) ){
++    const double xL1 = xL+2.*mc_PI*kL;
++    if( xL1 >= 0.5*mc_PI ){
+       cv[0] = std::cos(x), cv[1] = -std::sin(x);
+       return cv;
+     }
+-    const double xU1 = std::min(xU+2.*PI*kL,PI);
+-    if( xL1 >= -0.5*PI && xU1 <= 0.5*PI ){
++    const double xU1 = std::min(xU+2.*mc_PI*kL,mc_PI);
++    if( xL1 >= -0.5*mc_PI && xU1 <= 0.5*mc_PI ){
+       double r = ( isequal( xL, xU )? 0.: (std::cos(xU)-std::cos(xL))/(xU-xL) );
+       cv[0] = std::cos(xL)+r*(x-xL), cv[1] = r;
+       return cv;
+     }
+-    return _coscv2( x+2.*PI*kL, xL1, xU1 );
++    return _coscv2( x+2.*mc_PI*kL, xL1, xU1 );
+   }
+ 
+-  const int kU = std::floor((1.-xU/PI)/2.);
+-  if( x >= PI*(-1-2*kU) ){
+-    const double xU2 = xU+2.*PI*kU;
+-    if( xU2 <= -0.5*PI ){
++  const int kU = std::floor((1.-xU/mc_PI)/2.);
++  if( x >= mc_PI*(-1-2*kU) ){
++    const double xU2 = xU+2.*mc_PI*kU;
++    if( xU2 <= -0.5*mc_PI ){
+       cv[0] = std::cos(x), cv[1] = -std::sin(x);
+       return cv;
+     }
+-    return _coscv2( x+2.*PI*kU, std::max(xL+2.*PI*kU,-PI), xU2 );
++    return _coscv2( x+2.*mc_PI*kU, std::max(xL+2.*mc_PI*kU,-mc_PI), xU2 );
+   }
+ 
+   cv[0] = -1., cv[1] = 0.;
+@@ -2107,7 +2107,7 @@ McCormick<T>::_coscc
+ ( const double x, const double xL, const double xU )
+ {
+   static double cc[2];
+-  const double*cvenv = _coscv( x-PI, xL-PI, xU-PI );
++  const double*cvenv = _coscv( x-mc_PI, xL-mc_PI, xU-mc_PI );
+   cc[0] = -cvenv[0], cc[1] = -cvenv[1];
+   return cc;
+ }
+@@ -3504,7 +3504,7 @@ template <typename T> inline McCormick<T>
+ sin
+ ( const McCormick<T> &MC )
+ {
+-  return cos( MC - PI/2. );
++  return cos( MC - mc_PI/2. );
+ }
+ 
+ template <typename T> inline McCormick<T>
+@@ -3559,18 +3559,18 @@ template <typename T> inline McCormick<T>
+ acos
+ ( const McCormick<T> &MC )
+ {
+-  return asin( -MC ) + PI/2.;
++  return asin( -MC ) + mc_PI/2.;
+ }
+ 
+ template <typename T> inline McCormick<T>
+ tan
+ ( const McCormick<T> &MC )
+ {
+-  if ( Op<T>::diam(MC._I) >= PI )
++  if ( Op<T>::diam(MC._I) >= mc_PI )
+     throw typename McCormick<T>::Exceptions( McCormick<T>::Exceptions::TAN );
+-  const double shift = PI*std::ceil(-Op<T>::l(MC._I)/PI-1./2.);
++  const double shift = mc_PI*std::ceil(-Op<T>::l(MC._I)/mc_PI-1./2.);
+   const double xL1 = Op<T>::l(MC._I)+shift, xU1 = Op<T>::u(MC._I)+shift;
+-  if ( xL1 <= -PI/2. || xU1 >= PI/2. )
++  if ( xL1 <= -mc_PI/2. || xU1 >= mc_PI/2. )
+     throw typename McCormick<T>::Exceptions( McCormick<T>::Exceptions::TAN );
+ 
+   McCormick<T> MC2;
+@@ -3772,7 +3772,7 @@ namespace mc
+ {
+ 
+ //! @brief Specialization of the structure mc::Op to allow usage of the type mc::McCormick as a template parameter in the classes mc::TModel, mc::TVar, and mc::SpecBnd
+-template <> template<typename T> struct Op< mc::McCormick<T> >
++template<typename T> struct Op< mc::McCormick<T> >
+ {
+   typedef mc::McCormick<T> MC;
+   static MC point( const double c ) { return MC(c); }
+diff --git a/MCpp/src/mc/mcfadbad.hpp b/MCpp/src/mc/mcfadbad.hpp
+index ce32f2d..8d216e6 100644
+--- a/MCpp/src/mc/mcfadbad.hpp
++++ b/MCpp/src/mc/mcfadbad.hpp
+@@ -21,7 +21,7 @@ namespace fadbad
+     static Base myZero() { return myInteger(0); }
+     static Base myOne() { return myInteger(1);}
+     static Base myTwo() { return myInteger(2); }
+-    static double myPI() { return mc::PI; }
++    static double myPI() { return mc::mc_PI; }
+     static I myPos( const I& x ) { return  x; }
+     static I myNeg( const I& x ) { return -x; }
+     template <typename U> static I& myCadd( I& x, const U& y ) { return x+=y; }
+@@ -56,7 +56,7 @@ namespace fadbad
+     static Base myZero() { return myInteger(0); }
+     static Base myOne() { return myInteger(1);}
+     static Base myTwo() { return myInteger(2); }
+-    static double myPI() { return mc::PI; }
++    static double myPI() { return mc::mc_PI; }
+     static MC myPos( const MC& x ) { return  x; }
+     static MC myNeg( const MC& x ) { return -x; }
+     template <typename U> static MC& myCadd( MC& x, const U& y ) { return x+=y; }
+@@ -91,7 +91,7 @@ namespace fadbad
+     static Base myZero() { return myInteger(0); }
+     static Base myOne() { return myInteger(1);}
+     static Base myTwo() { return myInteger(2); }
+-    static double myPI() { return mc::PI; }
++    static double myPI() { return mc::mc_PI; }
+     static TM myPos( const TM& x ) { return  x; }
+     static TM myNeg( const TM& x ) { return -x; }
+     template <typename U> static TM& myCadd( TM& x, const U& y ) { return x+=y; }
+@@ -126,7 +126,7 @@ namespace fadbad
+     static Base myZero() { return myInteger(0); }
+     static Base myOne() { return myInteger(1);}
+     static Base myTwo() { return myInteger(2); }
+-    static double myPI() { return mc::PI; }
++    static double myPI() { return mc::mc_PI; }
+     static SB myPos( const SB& x ) { return  x; }
+     static SB myNeg( const SB& x ) { return -x; }
+     template <typename U> static SB& myCadd( SB& x, const U& y ) { return x+=y; }
+diff --git a/MCpp/src/mc/mcfunc.hpp b/MCpp/src/mc/mcfunc.hpp
+index 5c5a105..7ddbfd4 100644
+--- a/MCpp/src/mc/mcfunc.hpp
++++ b/MCpp/src/mc/mcfunc.hpp
+@@ -13,7 +13,7 @@ namespace mc
+ {
+ 
+ enum{ ICUT = 0, ICONV, ICONC };
+-const double PI = 4.0*std::atan(1.0);
++const double mc_PI = 4.0*std::atan(1.0);
+ 
+ inline double sign
+ ( const double x )
+diff --git a/MCpp/src/mc/specbnd.hpp b/MCpp/src/mc/specbnd.hpp
+index 97b2d12..b3f2d3e 100644
+--- a/MCpp/src/mc/specbnd.hpp
++++ b/MCpp/src/mc/specbnd.hpp
+@@ -1362,7 +1362,7 @@ erf
+ //   Specbnd<T> z;
+ //   z._n = y._n;
+ //   z._FI = fadbad::erf( y._FI );
+-//   z._spec = 2./std::sqrt(PI)*Op<T>::exp(-Op<T>::sqr(y._FI.val())) * ( y._spec
++//   z._spec = 2./std::sqrt(mc_PI)*Op<T>::exp(-Op<T>::sqr(y._FI.val())) * ( y._spec
+ //     - 2.*y._FI.val()*Specbnd<T>::_LambdaS( y._FI, z._n ) );
+ //   return z;
+ }
+@@ -1375,7 +1375,7 @@ erfc
+ //   Specbnd<T> z;
+ //   z._n = y._n;
+ //   z._FI = fadbad::erfc( y._FI );
+-//   z._spec = - 2./std::sqrt(PI)*Op<T>::exp(-Op<T>::sqr(y._FI.val())) * ( y._spec
++//   z._spec = - 2./std::sqrt(mc_PI)*Op<T>::exp(-Op<T>::sqr(y._FI.val())) * ( y._spec
+ //     - 2.*y._FI.val()*Specbnd<T>::_LambdaS( y._FI, z._n ) );
+ //   return z;
+ }
+@@ -1433,4 +1433,3 @@ template <> template<typename T> struct Op< mc::Specbnd<T> >
+ } // namespace mc
+ 
+ #endif
+-
+diff --git a/MCpp/src/mc/tmodel.hpp b/MCpp/src/mc/tmodel.hpp
+index 85dbf4d..2e8df2d 100644
+--- a/MCpp/src/mc/tmodel.hpp
++++ b/MCpp/src/mc/tmodel.hpp
+@@ -3078,7 +3078,7 @@ template <typename T> inline TVar<T>
+ sin
+ ( const TVar<T> &TV )
+ {
+-  return cos( TV - PI/2. );
++  return cos( TV - mc_PI/2. );
+ }
+ 
+ template <typename T> inline TVar<T>
+@@ -3121,7 +3121,7 @@ template <typename T> inline TVar<T>
+ acos
+ ( const TVar<T> &TV )
+ {
+-  return PI/2. - asin( TV );
++  return mc_PI/2. - asin( TV );
+ }
+ 
+ template <typename T> inline TVar<T>
+@@ -3156,7 +3156,7 @@ atan
+   TV2._update_bndord();
+   TV2 += Op<T>::pow( IG * Op<T>::cos( Op<T>::atan(IG0) ),
+          (int)TV2._nord()+1 ) / (double)(TV2._nord()+1)
+-         * sin( (TV2._nord()+1) * (atan(IG0)+PI/2.) );
++         * sin( (TV2._nord()+1) * (atan(IG0)+mc_PI/2.) );
+   if( TV2._TM->options.PROPAGATE_BNDT ) TV2._bndT = Op<T>::asin( TV._bndT );
+   if( TV2._TM->options.CENTER_REMAINDER ) TV2._center_TM();
+   return TV2;
+diff --git a/MCpp/src/test/tmodel_test.hpp b/MCpp/src/test/tmodel_test.hpp
+index 6a6e82c..7964ed7 100644
+--- a/MCpp/src/test/tmodel_test.hpp
++++ b/MCpp/src/test/tmodel_test.hpp
+@@ -161,7 +161,7 @@ public:
+     TM_1d->options.DISPLAY_DIGITS=15;
+     TM_1d->options.BOUNDER_ORDER = 0;
+     TM_1d->options.BERNSTEIN_USE = false;
+-    TVX  = TVar<Interval>( TM_1d, 0, Interval(PI/6., PI/3.) );
++    TVX  = TVar<Interval>( TM_1d, 0, Interval(mc_PI/6., mc_PI/3.) );
+ 
+     TM_1d->options.BOUNDER_TYPE = TModel<Interval>::Options::LSB;
+     TVar<Interval> TVF;
+@@ -198,7 +198,7 @@ public:
+     TM_1d->options.DISPLAY_DIGITS=15;
+     TM_1d->options.BOUNDER_ORDER = 0;
+     TM_1d->options.BERNSTEIN_USE = false;
+-    TVX  = TVar<Interval>( TM_1d, 0, Interval(0., PI/3.) );
++    TVX  = TVar<Interval>( TM_1d, 0, Interval(0., mc_PI/3.) );
+ 
+     TM_1d->options.BOUNDER_TYPE = TModel<Interval>::Options::LSB;
+     TVar<Interval> TVF;
+@@ -308,7 +308,7 @@ public:
+ 
+   void testTMEnv(){
+     // The following line should throw an instance of TModel<Interval>::Exceptions
+-    TVX  = TVar<Interval>( TM_1d, 0, Interval(0., PI/3.) );
++    TVX  = TVar<Interval>( TM_1d, 0, Interval(0., mc_PI/3.) );
+     TVX2 = TVar<Interval>( TM_2d, 1, Interval(0., 1.) );
+     TVX+TVX2;
+   }

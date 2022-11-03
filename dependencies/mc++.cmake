@@ -6,7 +6,7 @@ ExternalProject_Add(
         GIT_REPOSITORY https://github.com/coin-or/MCpp
         GIT_SHALLOW 1
         UPDATE_COMMAND ""
-        PATCH_COMMAND patch --follow-symlinks MCpp/src/mc/mccormick.hpp ${CMAKE_SOURCE_DIR}/dependencies/mcpp.patch
+        PATCH_COMMAND git apply ${CMAKE_SOURCE_DIR}/dependencies/mcpp.patch
         CONFIGURE_COMMAND ""
         BUILD_COMMAND ""
         BUILD_IN_SOURCE 1
