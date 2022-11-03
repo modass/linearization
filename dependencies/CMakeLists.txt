@@ -13,3 +13,4 @@ endif ()
 
 include(mc++.cmake)
 include(gtest.cmake)
+include(spdlog.cmake)
