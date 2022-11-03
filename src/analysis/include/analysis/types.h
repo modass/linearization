@@ -13,16 +13,16 @@
  * Created by Stefan Schupp <stefan.schupp@tuwien.ac.at> on 20.10.22.
  */
 
-#ifndef LINEARIZATION_TYPES_H
-#define LINEARIZATION_TYPES_H
+#ifndef ANALYSIS_TYPES_H
+#define ANALYSIS_TYPES_H
 
-#include <hypro/util/adaptions_carl/adaptions_includes.h> // required for mpq_class and others
+#include <hypro/util/adaptions_carl/adaptions_includes.h>  // required for mpq_class and others
 
 namespace analysis {
 
 using Rational = mpq_class;
 using Float = double;
 
-} // namespace hypro
+}  // namespace analysis
 
-#endif // LINEARIZATION_TYPES_H
+#endif	// ANALYSIS_TYPES_H
