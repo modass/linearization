@@ -25,9 +25,9 @@ namespace linearization {
 
 /// Settings for the linearization-method
 struct Settings {
-	Domain domain;							///< The domain over which to linearize
-	std::vector<std::size_t> subdivisions;	///< The subdivisions for each dimension used for higher precision
-	bool isMcppSettingsSet = false;			///< Cache to indicate that MCpp-settings have already been set
+	Domain domain;							 ///< The domain over which to linearize
+	std::vector<std::size_t> subdivisions;	 ///< The subdivisions for each dimension used for higher precision
+	mutable bool isMcppSettingsSet = false;	 ///< Cache to indicate that MCpp-settings have already been set
 
 	bool isValid() const {
 		return domain.intervals.size() == subdivisions.size();
