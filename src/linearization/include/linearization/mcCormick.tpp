@@ -15,7 +15,9 @@
 
 #pragma once
 
+#include "heuristics/uniformRandom.h"
 #include "mcCormick.h"
+#include "types.h"
 
 #include <MCpp/include/interval.hpp>
 #include <MCpp/include/mccormick.hpp>
@@ -26,18 +28,12 @@ namespace linearization {
 
 template <typename Function>
 void linearizeMonomial( const Function& dynamics, const Settings& settings, LinearizationResult<double>& result ) {
-	using Interval = mc::Interval;
-	using MC = mc::McCormick<Interval>;
-
-	MC::options.ENVEL_USE = true;
-	MC::options.ENVEL_MAXIT = 100;
-	MC::options.ENVEL_TOL = 1e-12;
-	MC::options.MVCOMP_USE = true;
 
 	// find best linearization points according to some heuristic (default: random) -> put this into the settings
 	// lines 128-193
 	// do this for lower and upper approximation
 	// get: good linearization points for lower and upper approximation
+	auto linearizationPoint = getLinearizationPoint( dynamics, settings );
 
 	// do the relaxation in the chosen points
 

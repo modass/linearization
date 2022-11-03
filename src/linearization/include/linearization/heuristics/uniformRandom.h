@@ -45,6 +45,9 @@ Point getLinearizationPoint( const Function& dynamics, const Settings& settings 
 	double best_error = std::numeric_limits<double>::infinity();
 	Point res;
 
+	// make sure mcpp-settings are set
+	settings.setMcppSettings();
+
 	const auto& domain = settings.domain;
 	for ( int i = 0; i < 10; ++i ) {
 		auto dim = domain.intervals.size();
