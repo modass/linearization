@@ -25,7 +25,8 @@ Analyzer<Representation, Dynamics>::Analyzer( Dynamics&& dynamics, const std::ve
 
 template <typename Representation, typename Dynamics>
 void Analyzer<Representation, Dynamics>::run() {
-	// create linearization
+	linearization::LinearizationResult<double> linearization;
+	// create Carleman linearization
 
 	// build automaton from linearization
 

@@ -7,7 +7,6 @@
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
- *
  */
 
 //
@@ -19,11 +18,15 @@
 
 #include "LinearizationResult.h"
 #include "Settings.h"
+#include "types.h"
 
 namespace linearization {
 
 template <typename Function>
-LinearizationResult<double> linearize( const Function& dynamics, const Settings& settings );
+void linearizeMonomial( const Function& dynamics, const Settings& settings, LinearizationResult<double>& result );
+
+template <typename Function>
+MC getRelaxationInPoint( const Function& dynamics, const Domain& domain );
 
 }  // namespace linearization
 

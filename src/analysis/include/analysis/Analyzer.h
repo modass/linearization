@@ -17,11 +17,14 @@
 #define LINEARIZATION_ANALYZER_H
 
 #include "types.h"
+
 #include <hypro/algorithms/reachability/Reach.h>
 #include <hypro/datastructures/HybridAutomaton/HybridAutomaton.h>
+#include <linearization/LinearizationResult.h>
+#include <linearization/mcCormick.h>
+#include <linearization/types.h>
 
-namespace analysis
-{
+namespace analysis {
 
 /**
  * Class that wraps reachability analysis for linear hybrid systems implemented

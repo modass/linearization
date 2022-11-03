@@ -10,23 +10,29 @@
  */
 
 /*
- * Created by Stefan Schupp <stefan.schupp@tuwien.ac.at> on 20.10.22.
+ * Created by Stefan Schupp <stefan.schupp@tuwien.ac.at> on 03.11.22.
  */
 
-#ifndef LINEARIZATION_LINEARIZATIONRESULT_H
-#define LINEARIZATION_LINEARIZATIONRESULT_H
+#ifndef LINEARIZATION_TYPES_H
+#define LINEARIZATION_TYPES_H
 
-#include <hypro/datastructures/HybridAutomaton/Condition.h>
-#include <hypro/datastructures/HybridAutomaton/HybridAutomaton.h>
+#include <MCpp/include/interval.hpp>
+#include <MCpp/include/mccormick.hpp>
+#include <hypro/datastructures/Point.h>
+#include <vector>
 
 namespace linearization {
 
-template <typename Number>
-struct LinearizationResult {
-	hypro::Condition<Number> initialCondition;	///< Polyhedral description of the linearized initial set
-												// std::vector< dynamics;	///< Single-location automaton which holds the linearized dynamics
+using Point = hypro::Point<double>;
+using Index = Eigen::Index;
+
+using Interval = mc::Interval;
+using MC = mc::McCormick<Interval>;
+
+struct Domain {
+	std::vector<Interval> intervals;
 };
 
 }  // namespace linearization
 
-#endif	// LINEARIZATION_LINEARIZATIONRESULT_H
+#endif	// LINEARIZATION_TYPES_H

@@ -7,12 +7,13 @@
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
- *
  */
 
 //
 // Created by Stefan Schupp on 17.10.22.
 //
+
+#pragma once
 
 #include "mcCormick.h"
 
@@ -24,16 +25,23 @@
 namespace linearization {
 
 template <typename Function>
-LinearizationResult<double> linearize( const Function& dynamics, const Settings& settings ) {
+void linearizeMonomial( const Function& dynamics, const Settings& settings, LinearizationResult<double>& result ) {
 	using Interval = mc::Interval;
 	using MC = mc::McCormick<Interval>;
-
-	LinearizationResult<double> res;
 
 	MC::options.ENVEL_USE = true;
 	MC::options.ENVEL_MAXIT = 100;
 	MC::options.ENVEL_TOL = 1e-12;
 	MC::options.MVCOMP_USE = true;
+
+	// find best linearization points according to some heuristic (default: random) -> put this into the settings
+	// lines 128-193
+	// do this for lower and upper approximation
+	// get: good linearization points for lower and upper approximation
+
+	// do the relaxation in the chosen points
+
+	// write result
 
 	// create sample points
 	auto combinator = hypro::Combinator( settings.subdivisions, settings.subdivisions.size() );
@@ -44,15 +52,28 @@ LinearizationResult<double> linearize( const Function& dynamics, const Settings&
 		std::vector<double> sample;
 		std::vector<MC> relaxations;
 		for ( std::size_t i = 0; i < sample_indices.size(); ++i ) {
-			const auto& dom = settings.domain[i];
-			sample.push_back( dom.l() + sample_indices[i] * ( diam( dom ) / settings.subdivisions[i] ) );
+			const auto& dom = settings.domain.intervals[i];
+			sample.push_back( dom.l() + sample_indices[i] * ( mc::diam( dom ) / settings.subdivisions[i] ) );
 			relaxations.push_back( MC( dom, sample.back() ) );
 		}
 		MC relaxation = dynamics( relaxations );
 	}
 
 	throw utility::NotImplemented();
-	return res;
+}
+
+template <typename Function>
+MC getRelaxationInPoint( const Function& dynamics, const Domain& domain, const Point& point ) {
+	auto dim = domain.intervals.size();
+	std::vector<MC> relaxations;
+	for ( std::size_t i = 0; i < dim; ++i ) {
+		// create relaxation in point per dimension
+		relaxations.push_back( MC( domain.intervals[i], point[i] ) );
+		// defining subgradient component
+		relaxations.back().sub( dim, i );
+	}
+	// compute the McCormick convex and concave relaxations of myfunc at (Xrel,Yrel) along with subgradients of these relaxations.
+	return dynamics( relaxations );
 }
 
 }  // namespace linearization
