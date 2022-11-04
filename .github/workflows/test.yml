@@ -74,7 +74,7 @@ jobs:
 
     - name: Produce coverage reports
       working-directory: ${{github.workspace}}/build
-      run: make linearization_coverage
+      run: make linearization_coverage && cat linearization_coverage.xml
 
     - name: Upload coverage
       working-directory: ${{github.workspace}}/build
