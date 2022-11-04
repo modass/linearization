@@ -66,7 +66,7 @@ jobs:
       # Build your program with the given configuration
       working-directory: ${{github.workspace}}/build
       #run: cmake --build ${{github.workspace}}/build --config Debug --target all
-      run: make
+      run: make -j $(nproc)
 
     - name: Test
       working-directory: ${{github.workspace}}/build
@@ -77,7 +77,7 @@ jobs:
 
     - name: Produce coverage reports
       working-directory: ${{github.workspace}}/build
-      run: make linearization_coverage && cat linearization_coverage.xml
+      run: make linearization_coverage
 
     - name: Upload coverage
       working-directory: ${{github.workspace}}/build
