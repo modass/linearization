@@ -60,17 +60,20 @@ jobs:
     - name: Configure cmake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON DCODE_COVERAGE_VERBOSE=ON
 
     - name: Build
       # Build your program with the given configuration
-      run: cmake --build ${{github.workspace}}/build --config Debug --target all
+      working-directory: ${{github.workspace}}/build
+      #run: cmake --build ${{github.workspace}}/build --config Debug --target all
+      run: make
 
     - name: Test
       working-directory: ${{github.workspace}}/build
       # Execute tests defined by the CMake configuration.  
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: ctest -C Debug
+      #run: ctest -C Debug
+      run: make test
 
     - name: Produce coverage reports
       working-directory: ${{github.workspace}}/build
