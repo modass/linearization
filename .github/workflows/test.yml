@@ -77,6 +77,5 @@ jobs:
       run: make linearization_coverage
 
     - name: Upload coverage
-      uses: codecov/codecov-action@v3
-      #working-directory: ${{github.workspace}}/build
-      #run: curl -Os https://uploader.codecov.io/latest/linux/codecov && chmod +x codecov && ./codecov -t ${CODECOV_TOKEN}
+      working-directory: ${{github.workspace}}/build
+      run: curl -Os https://uploader.codecov.io/latest/linux/codecov && chmod +x codecov && ./codecov -t ${CODECOV_TOKEN}
