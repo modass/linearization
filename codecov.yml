@@ -2,6 +2,7 @@ ignore:
   - "test/**"
   - "_deps/**"
   - "dependencies/**"
+  - "**/library.cpp"
 coverage:
   status:
     project:
