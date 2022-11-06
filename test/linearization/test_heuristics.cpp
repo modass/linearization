@@ -16,7 +16,6 @@
 #include <gtest/gtest.h>
 #include <linearization/heuristics/uniformRandom.h>
 
-// Demonstrate some basic assertions.
 TEST( Heuristics, UniformRandom ) {
 	linearization::Domain dom{ { linearization::Interval{ 0, 10 }, linearization::Interval{ 0, 10 }, linearization::Interval{ 0, 10 } } };
 
