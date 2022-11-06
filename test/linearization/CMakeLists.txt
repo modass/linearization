@@ -1,6 +1,7 @@
 add_executable(
         linearization_test
         test_heuristics.cpp
+        test_relaxation.cpp
 )
 target_link_libraries(
         linearization_test
