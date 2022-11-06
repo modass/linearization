@@ -19,24 +19,13 @@
 #include "../mcCormick.h"
 #include "../types.h"
 
-#include <random>
 #include <spdlog/fmt/ostr.h>
 #include <spdlog/spdlog.h>
 
 namespace linearization {
 
 namespace impl {
-Point generateRandomPoint( const Domain& domain ) {
-	Point res = Point( hypro::vector_t<double>( domain.intervals.size() ) );
-	std::random_device rd;
-	std::mt19937 gen( rd() );
-	Index pos{ 0 };
-	for ( const auto& interval : domain.intervals ) {
-		std::uniform_real_distribution<> dist( interval.l(), interval.u() );
-		res[pos++] = dist( gen );
-	}
-	return res;
-}
+Point generateRandomPoint( const Domain& domain );
 }  // namespace impl
 
 template <typename Function>
