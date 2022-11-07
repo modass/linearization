@@ -7,6 +7,7 @@
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+ *
  */
 
 /*
@@ -63,6 +64,7 @@ Point getLinearizationPoint( const Function& dynamics, const Settings& settings 
 				const auto& dom = settings.domain.intervals[j];
 				gridpoint[j] = ( dom.l() + gridpoint_indices[j] * ( mc::diam( dom ) / settings.subdivisions[j] ) );
 			}
+			spdlog::trace( "Grid-point: {}", gridpoint );
 			MC gridpoint_relaxation = getRelaxationInPoint( dynamics, domain, gridpoint );
 			// add error
 			double local_error = 0;

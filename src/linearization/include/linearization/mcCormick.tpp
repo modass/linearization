@@ -22,6 +22,9 @@
 
 #include <MCpp/include/mccormick.hpp>
 #include <hypro/util/sequenceGeneration/SequenceGenerator.h>
+#include <spdlog/fmt/bundled/ostream.h>
+#include <spdlog/fmt/bundled/ranges.h>
+#include <spdlog/spdlog.h>
 #include <utility/Exceptions.h>
 
 namespace linearization {
@@ -33,6 +36,7 @@ void linearizeMonomial( const Function& dynamics, const Settings& settings, Line
 	// do this for lower and upper approximation
 	// get: good linearization points for lower and upper approximation
 	auto linearizationPoint = getLinearizationPoint( dynamics, settings );
+	spdlog::trace( "Linearization point: {}", linearizationPoint );
 
 	// do the relaxation in the chosen points
 
@@ -51,6 +55,7 @@ void linearizeMonomial( const Function& dynamics, const Settings& settings, Line
 			sample.push_back( dom.l() + sample_indices[i] * ( mc::diam( dom ) / settings.subdivisions[i] ) );
 			relaxations.push_back( MC( dom, sample.back() ) );
 		}
+		spdlog::trace( "Sample: {}", sample );
 		MC relaxation = dynamics( relaxations );
 	}
 
@@ -67,8 +72,11 @@ MC getRelaxationInPoint( const Function& dynamics, const Domain& domain, const P
 		// defining subgradient component
 		relaxations.back().sub( dim, i );
 	}
+	spdlog::trace( "Relaxations pre-execution of the function: {}", relaxations );
 	// compute the McCormick convex and concave relaxations of myfunc at (Xrel,Yrel) along with subgradients of these relaxations.
-	return dynamics( relaxations );
+	auto res = dynamics( relaxations );
+	spdlog::debug( "Created relaxation {} in point {}", res, point );
+	return res;
 }
 
 }  // namespace linearization
