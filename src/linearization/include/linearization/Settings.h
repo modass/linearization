@@ -7,6 +7,7 @@
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+ *
  */
 
 /*
@@ -29,11 +30,11 @@ struct Settings {
 	std::vector<std::size_t> subdivisions;	 ///< The subdivisions for each dimension used for higher precision
 	mutable bool isMcppSettingsSet = false;	 ///< Cache to indicate that MCpp-settings have already been set
 
-	bool isValid() const {
+	inline bool isValid() const {
 		return domain.intervals.size() == subdivisions.size();
 	}
 
-	void setMcppSettings() const {
+	inline void setMcppSettings() const {
 		if ( !isMcppSettingsSet ) {
 			MC::options.ENVEL_USE = true;
 			MC::options.ENVEL_MAXIT = 100;

@@ -7,6 +7,7 @@
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+ *
  */
 
 //
@@ -19,7 +20,6 @@
 #include "mcCormick.h"
 #include "types.h"
 
-#include <MCpp/include/interval.hpp>
 #include <MCpp/include/mccormick.hpp>
 #include <hypro/util/sequenceGeneration/SequenceGenerator.h>
 #include <utility/Exceptions.h>
@@ -28,7 +28,6 @@ namespace linearization {
 
 template <typename Function>
 void linearizeMonomial( const Function& dynamics, const Settings& settings, LinearizationResult<double>& result ) {
-
 	// find best linearization points according to some heuristic (default: random) -> put this into the settings
 	// lines 128-193
 	// do this for lower and upper approximation
