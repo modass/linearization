@@ -55,9 +55,36 @@ index a860694..f1c0326 100644
  T myfunc
  ( const T&x )
 diff --git a/MCpp/src/mc/interval.hpp b/MCpp/src/mc/interval.hpp
-index 0538192..0327954 100644
+index 0538192..3a3f03d 100644
 --- a/MCpp/src/mc/interval.hpp
 +++ b/MCpp/src/mc/interval.hpp
+@@ -316,7 +316,7 @@ public:
+    *  @{
+    */
+   //! @brief Options of mc::Interval
+-  static struct Options
++  /*static struct Options
+   {
+     //! @brief Constructor
+     Options():
+@@ -324,7 +324,7 @@ public:
+       {}
+     //! @brief Number of digits displayed with << operator (default=5)
+     unsigned int DISPLAY_DIGITS;
+-  } options;
++  } options;*/
+ 
+   //! @brief Exceptions of mc::Interval
+   class Exceptions
+@@ -424,7 +424,7 @@ private:
+ 
+ ////////////////////////////////////////////////////////////////////////
+ 
+-Interval::Options Interval::options;
++/*Interval::Options Interval::options;*/
+ 
+ inline Interval
+ operator+
 @@ -744,25 +744,25 @@ inline Interval
  cos
  ( const Interval&I )
@@ -110,6 +137,21 @@ index 0538192..0327954 100644
    Interval I2( std::tan(l), std::tan(u) );
    return I2;
  }
+@@ -818,9 +818,12 @@ inline std::ostream&
+ operator<<
+ ( std::ostream&out, const Interval&I)
+ {
+-  out << std::right << std::scientific << std::setprecision(Interval::options.DISPLAY_DIGITS);
++  /*out << std::right << std::scientific << std::setprecision(Interval::options.DISPLAY_DIGITS);
+   out << "[ "  << std::setw(Interval::options.DISPLAY_DIGITS+7) << I.l()
+-      << " : " << std::setw(Interval::options.DISPLAY_DIGITS+7) << I.u() << " ]";
++      << " : " << std::setw(Interval::options.DISPLAY_DIGITS+7) << I.u() << " ]";*/
++  out << std::right << std::scientific << std::setprecision(5);
++  out << "[ "  << std::setw(12) << I.l()
++      << " : " << std::setw(12) << I.u() << " ]";
+   return out;
+ }
+ 
 diff --git a/MCpp/src/mc/mccormick.hpp b/MCpp/src/mc/mccormick.hpp
 index 4bb133a..022bb8c 100644
 --- a/MCpp/src/mc/mccormick.hpp
