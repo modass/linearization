@@ -30,6 +30,7 @@ Point generateRandomPoint( const Domain& domain );
 
 template <typename Function>
 Point getLinearizationPoint( const Function& dynamics, const Settings& settings ) {
+	assert( settings.subdivisions.size() == settings.domain.intervals.size() );
 	// solution candidates
 	double best_error = std::numeric_limits<double>::infinity();
 	Point res;
@@ -38,7 +39,7 @@ Point getLinearizationPoint( const Function& dynamics, const Settings& settings 
 	settings.setMcppSettings();
 
 	const auto& domain = settings.domain;
-	for ( int i = 0; i < 10; ++i ) {
+	for ( int iteration = 0; iteration < 10; ++iteration ) {
 		auto dim = domain.intervals.size();
 		/*set the point for which to compute the affine approximation (linearization point=(x_ref,y_ref)), sampling from a uniform distribution. The support for the considered uniform distribution is equal
 		to the initial interval given for each coordinate.*/
@@ -58,15 +59,15 @@ Point getLinearizationPoint( const Function& dynamics, const Settings& settings 
 			auto gridpoint_indices = combinator();
 			// create actual grid point
 			auto gridpoint = Point( hypro::vector_t<double>( dim ) );
-			for ( std::size_t i = 0; i < gridpoint_indices.size(); ++i ) {
-				const auto& dom = settings.domain.intervals[i];
-				gridpoint[i] = ( dom.l() + gridpoint_indices[i] * ( mc::diam( dom ) / settings.subdivisions[i] ) );
+			for ( std::size_t j = 0; j < gridpoint_indices.size(); ++j ) {
+				const auto& dom = settings.domain.intervals[j];
+				gridpoint[j] = ( dom.l() + gridpoint_indices[j] * ( mc::diam( dom ) / settings.subdivisions[j] ) );
 			}
 			MC gridpoint_relaxation = getRelaxationInPoint( dynamics, domain, gridpoint );
 			// add error
 			double local_error = 0;
-			for ( std::size_t i = 0; i < gridpoint_indices.size(); ++i ) {
-				local_error += sample_relaxation.cvsub( i ) * ( gridpoint[i] - sample[i] );
+			for ( std::size_t j = 0; j < gridpoint_indices.size(); ++j ) {
+				local_error += sample_relaxation.cvsub( j ) * ( gridpoint[j] - sample[j] );
 			}
 			squared_error += pow( gridpoint_relaxation.cv() - ( sample_relaxation.cv() + local_error ), 2 );
 		}
