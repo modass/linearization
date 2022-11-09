@@ -31,6 +31,7 @@ namespace linearization {
 
 template <typename Function>
 void linearizeMonomial( const Function& dynamics, const Settings& settings, LinearizationResult<double>& result ) {
+	auto dim = settings.domain.intervals.size();
 	// find best linearization points according to some heuristic (default: random) -> put this into the settings
 	// lines 128-193
 	// do this for lower and upper approximation
@@ -39,27 +40,21 @@ void linearizeMonomial( const Function& dynamics, const Settings& settings, Line
 	spdlog::trace( "Linearization point: {}", linearizationPoint );
 
 	// do the relaxation in the chosen points
+	auto rel = getRelaxationInPoint( dynamics, settings.domain, linearizationPoint );
 
 	// write result
+	hypro::matrix_t<double> A = hypro::matrix_t<double>::Zero( 2, dim );
+	hypro::vector_t<double> b = hypro::vector_t<double>::Zero( 2 );
 
-	// create sample points
-	auto combinator = hypro::Combinator( settings.subdivisions, settings.subdivisions.size() );
-	while ( !combinator.end() ) {
-		// returns a list of indices, which toll us which bucket of the discretization to use
-		auto sample_indices = combinator();
-		// create actual sample point and relaxation-objects
-		std::vector<double> sample;
-		std::vector<MC> relaxations;
-		for ( std::size_t i = 0; i < sample_indices.size(); ++i ) {
-			const auto& dom = settings.domain.intervals[i];
-			sample.push_back( dom.l() + sample_indices[i] * ( mc::diam( dom ) / settings.subdivisions[i] ) );
-			relaxations.push_back( MC( dom, sample.back() ) );
-		}
-		spdlog::trace( "Sample: {}", sample );
-		MC relaxation = dynamics( relaxations );
+	b( 0 ) = -rel.cv();
+	b( 1 ) = -rel.cc();
+	for ( int k = 0; k < dim; ++k ) {
+		A( 0, k ) = rel.cvsub( k );
+		A( 1, k ) = rel.ccsub( k );
+		b( 0 ) += rel.cvsub( k ) * linearizationPoint[k];
+		b( 1 ) += rel.ccsub( k ) * linearizationPoint[k];
 	}
-
-	throw utility::NotImplemented();
+	result.initialCondition = hypro::Condition<double>( A, b );
 }
 
 template <typename Function>
