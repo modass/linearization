@@ -7,7 +7,6 @@
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
- *
  */
 
 //
@@ -69,12 +68,17 @@ MC getRelaxationInPoint( const Function& dynamics, const Domain& domain, const P
 	for ( std::size_t i = 0; i < dim; ++i ) {
 		// create relaxation in point per dimension
 		relaxations.push_back( MC( domain.intervals[i], point[i] ) );
-		// defining subgradient component
-		relaxations.back().sub( dim, i );
+		// defining subgradient components
+		for ( std::size_t j = 0; j < dim; ++j ) {
+			relaxations.back().sub( dim, j );
+		}
 	}
 	spdlog::trace( "Relaxations pre-execution of the function: {}", relaxations );
 	// compute the McCormick convex and concave relaxations of myfunc at (Xrel,Yrel) along with subgradients of these relaxations.
-	auto res = dynamics( relaxations );
+	MC res = dynamics( relaxations );
+	if ( sizeof( res.ccsub() ) / sizeof( double* ) != dim ) {
+		throw std::logic_error( "The execution of the dynamics did not define the complete set of subgradients (Expected: " + std::to_string( dim ) + ", got " + std::to_string( sizeof( res.ccsub() ) / sizeof( double ) ) + ")." );
+	}
 	spdlog::debug( "Created relaxation {} in point {}", res, point );
 	return res;
 }
