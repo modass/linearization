@@ -21,9 +21,17 @@
 namespace test::impl {
 
 template <typename N>
-struct monomial {
+struct constantMonomial {
 	N operator()( const std::vector<N>& in ) const {
 		N res = 0 * in[0] + 0 * in[1] + N( 2 );
+		return res;
+	}
+};
+
+template <typename N>
+struct quadraticMonomial {
+	N operator()( const std::vector<N>& in ) const {
+		N res = pow( in[0], 2 ) + 0 * in[1];
 		return res;
 	}
 };
@@ -38,6 +46,28 @@ TEST( Relaxation, ConstantFunction ) {
 	std::vector<std::size_t> subdivisions{ 5, 5 };
 	Settings s{ d, subdivisions };
 	LinearizationResult<double> result;
+	// call linearization, the result should contain two constraints which under- and over-approximate the monomial within the domain
+	linearizeMonomial( test::impl::constantMonomial<MC>(), s, result );
+	// checks
+	EXPECT_TRUE( result.initialCondition.size() == 1 );
+	EXPECT_EQ( 2, result.initialCondition.getMatrix().rows() );
+	EXPECT_EQ( 2, result.initialCondition.getMatrix().cols() );
+	EXPECT_EQ( 2, result.initialCondition.getVector().rows() );
+}
 
-	linearizeMonomial( test::impl::monomial<MC>(), s, result );
+TEST( Relaxation, QuadraticFunction ) {
+	using namespace linearization;
+	spdlog::set_level( spdlog::level::debug );
+
+	Domain d{ { Interval{ 0, 2 }, Interval{ 0, 2 } } };
+	std::vector<std::size_t> subdivisions{ 5, 5 };
+	Settings s{ d, subdivisions };
+	LinearizationResult<double> result;
+	// call linearization, the result should contain two constraints which under- and over-approximate the monomial within the domain
+	linearizeMonomial( test::impl::quadraticMonomial<MC>(), s, result );
+	// checks
+	EXPECT_TRUE( result.initialCondition.size() == 1 );
+	EXPECT_EQ( 2, result.initialCondition.getMatrix().rows() );
+	EXPECT_EQ( 2, result.initialCondition.getMatrix().cols() );
+	EXPECT_EQ( 2, result.initialCondition.getVector().rows() );
 }

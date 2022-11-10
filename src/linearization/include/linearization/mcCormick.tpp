@@ -36,25 +36,31 @@ void linearizeMonomial( const Function& dynamics, const Settings& settings, Line
 	// lines 128-193
 	// do this for lower and upper approximation
 	// get: good linearization points for lower and upper approximation
-	auto linearizationPoint = getLinearizationPoint( dynamics, settings );
-	spdlog::trace( "Linearization point: {}", linearizationPoint );
+	auto linearizationPoint_oapprox = getLinearizationPoint( dynamics, settings, Approximation::OVER );
+	auto linearizationPoint_uapprox = getLinearizationPoint( dynamics, settings, Approximation::UNDER );
+	spdlog::trace( "Linearization points:  over-approx.: {}, under-approx.: {}", linearizationPoint_oapprox, linearizationPoint_uapprox );
 
 	// do the relaxation in the chosen points
-	auto rel = getRelaxationInPoint( dynamics, settings.domain, linearizationPoint );
+	auto rel_oapprox = getRelaxationInPoint( dynamics, settings.domain, linearizationPoint_oapprox );
+	auto rel_uapprox = getRelaxationInPoint( dynamics, settings.domain, linearizationPoint_uapprox );
+
+	spdlog::debug( "Convex relaxation: {}", rel_uapprox );
+	spdlog::debug( "Concave relaxation: {}", rel_oapprox );
 
 	// write result
 	hypro::matrix_t<double> A = hypro::matrix_t<double>::Zero( 2, dim );
 	hypro::vector_t<double> b = hypro::vector_t<double>::Zero( 2 );
 
-	b( 0 ) = -rel.cv();
-	b( 1 ) = -rel.cc();
+	b( 0 ) = rel_uapprox.cv();
+	b( 1 ) = -rel_oapprox.cc();
 	for ( int k = 0; k < dim; ++k ) {
-		A( 0, k ) = rel.cvsub( k );
-		A( 1, k ) = rel.ccsub( k );
-		b( 0 ) += rel.cvsub( k ) * linearizationPoint[k];
-		b( 1 ) += rel.ccsub( k ) * linearizationPoint[k];
+		A( 0, k ) = -rel_uapprox.cvsub( k );
+		A( 1, k ) = rel_oapprox.ccsub( k );
+		b( 0 ) += -rel_uapprox.cvsub( k ) * linearizationPoint_uapprox[k];
+		b( 1 ) += rel_oapprox.ccsub( k ) * linearizationPoint_oapprox[k];
 	}
 	result.initialCondition = hypro::Condition<double>( A, b );
+	spdlog::debug( "Computed affine relaxation {}", result.initialCondition );
 }
 
 template <typename Function>
@@ -67,10 +73,8 @@ MC getRelaxationInPoint( const Function& dynamics, const Domain& domain, const P
 		// defining subgradient components
 		relaxations.back().sub( dim, i );
 	}
-	spdlog::trace( "Relaxations pre-execution of the function: {}", relaxations );
 	// compute the McCormick convex and concave relaxations of myfunc at (Xrel,Yrel) along with subgradients of these relaxations.
 	MC res = dynamics( relaxations );
-	spdlog::debug( "Created relaxation {} in point {}", res, point );
 	return res;
 }
 

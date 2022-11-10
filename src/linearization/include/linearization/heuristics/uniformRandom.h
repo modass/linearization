@@ -30,7 +30,7 @@ Point generateRandomPoint( const Domain& domain );
 }  // namespace impl
 
 template <typename Function>
-Point getLinearizationPoint( const Function& dynamics, const Settings& settings ) {
+Point getLinearizationPoint( const Function& dynamics, const Settings& settings, Approximation mode ) {
 	assert( settings.subdivisions.size() == settings.domain.intervals.size() );
 	// solution candidates
 	double best_error = std::numeric_limits<double>::infinity();
@@ -46,11 +46,8 @@ Point getLinearizationPoint( const Function& dynamics, const Settings& settings 
 		to the initial interval given for each coordinate.*/
 		auto sample = impl::generateRandomPoint( domain );
 
-		spdlog::trace( "Generated sample {}", sample );
-
 		// McCormick relaxations of function myfunct on [XL,XU]\times[YL,YU] at (Xrel, Yrel):
 		MC sample_relaxation = getRelaxationInPoint( dynamics, domain, sample );
-		spdlog::trace( "Relaxation at reference point: {}", sample_relaxation );
 
 		double squared_error = 0;
 		// compute relaxation for grid
@@ -64,14 +61,20 @@ Point getLinearizationPoint( const Function& dynamics, const Settings& settings 
 				const auto& dom = settings.domain.intervals[j];
 				gridpoint[j] = ( dom.l() + gridpoint_indices[j] * ( mc::diam( dom ) / settings.subdivisions[j] ) );
 			}
-			spdlog::trace( "Grid-point: {}", gridpoint );
 			MC gridpoint_relaxation = getRelaxationInPoint( dynamics, domain, gridpoint );
 			// add error
 			double local_error = 0;
-			for ( std::size_t j = 0; j < gridpoint_indices.size(); ++j ) {
-				local_error += sample_relaxation.cvsub( j ) * ( gridpoint[j] - sample[j] );
+			if ( mode == linearization::Approximation::UNDER ) {
+				for ( std::size_t j = 0; j < gridpoint_indices.size(); ++j ) {
+					local_error += sample_relaxation.cvsub( j ) * ( gridpoint[j] - sample[j] );
+				}
+				squared_error += pow( gridpoint_relaxation.cv() - sample_relaxation.cv() + local_error, 2 );
+			} else {
+				for ( std::size_t j = 0; j < gridpoint_indices.size(); ++j ) {
+					local_error += sample_relaxation.ccsub( j ) * ( gridpoint[j] - sample[j] );
+				}
+				squared_error += pow( gridpoint_relaxation.cc() - sample_relaxation.cv() + local_error, 2 );
 			}
-			squared_error += pow( gridpoint_relaxation.cv() - ( sample_relaxation.cv() + local_error ), 2 );
 		}
 		double error = std::sqrt( squared_error );
 
