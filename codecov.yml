@@ -1,0 +1,13 @@
+ignore:
+  - "test/**"
+  - "_deps/**"
+  - "dependencies/**"
+  - "**/library.cpp"
+coverage:
+  status:
+    project:
+      default:
+        threshold: 1%
+    patch:
+      default:
+        target: 90%

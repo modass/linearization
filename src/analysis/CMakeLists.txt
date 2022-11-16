@@ -1,0 +1,3 @@
+add_library(analysis INTERFACE)
+target_include_directories(analysis INTERFACE include)
+target_link_libraries(analysis INTERFACE utility linearization)
