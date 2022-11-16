@@ -7,7 +7,6 @@
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
- *
  */
 
 /*
@@ -30,8 +29,9 @@ struct constantMonomial {
 
 template <typename N>
 struct quadraticMonomial {
+	// monomial: y = x^2, or: 0 = x^2 - y
 	N operator()( const std::vector<N>& in ) const {
-		N res = pow( in[0], 2 ) + 0 * in[1];
+		N res = pow( in[0], 2 ) - in[1];
 		return res;
 	}
 };
@@ -59,9 +59,27 @@ TEST( Relaxation, QuadraticFunction ) {
 	using namespace linearization;
 	spdlog::set_level( spdlog::level::debug );
 
-	Domain d{ { Interval{ 0, 2 }, Interval{ 0, 2 } } };
+	Domain d{ { Interval{ -2, 2 }, Interval{ 0, 4 } } };
 	std::vector<std::size_t> subdivisions{ 5, 5 };
 	Settings s{ d, subdivisions };
+
+	// test relaxation in specific points
+	{
+		auto res = getRelaxationInPoint( test::impl::quadraticMonomial<MC>(), d, Point{ 0, 0 } );
+		EXPECT_EQ( 0, res.cv() );
+		EXPECT_EQ( 4, res.cc() );
+		EXPECT_EQ( 0, res.cvsub( 0 ) );
+		EXPECT_EQ( -1, res.cvsub( 1 ) );
+	}
+	{
+		auto res = getRelaxationInPoint( test::impl::quadraticMonomial<MC>(), d, Point{ 1, 0 } );
+		EXPECT_EQ( 1, res.cv() );
+		EXPECT_EQ( 4, res.cc() );
+		EXPECT_EQ( 2, res.cvsub( 0 ) );
+		EXPECT_EQ( -1, res.cvsub( 1 ) );
+	}
+
+	// test randomized relaxation
 	LinearizationResult<double> result;
 	// call linearization, the result should contain two constraints which under- and over-approximate the monomial within the domain
 	linearizeMonomial( test::impl::quadraticMonomial<MC>(), s, result );
@@ -70,4 +88,11 @@ TEST( Relaxation, QuadraticFunction ) {
 	EXPECT_EQ( 2, result.initialCondition.getMatrix().rows() );
 	EXPECT_EQ( 2, result.initialCondition.getMatrix().cols() );
 	EXPECT_EQ( 2, result.initialCondition.getVector().rows() );
+	// test some points
+	int resolution = 100;
+	for ( int i = 0; i <= resolution; ++i ) {
+		double x = -2 + i * ( ( d.intervals[0].u() - d.intervals[0].l() ) / resolution );
+		double y = pow( x, 2 );
+		EXPECT_TRUE( result.initialCondition.contains( Point( { x, y } ) ) );
+	}
 }

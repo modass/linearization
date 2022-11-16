@@ -33,6 +33,11 @@ struct Domain {
 	std::vector<Interval> intervals;
 };
 
+enum class Approximation {
+	OVER = 0,
+	UNDER = 1
+};
+
 }  // namespace linearization
 
 #endif	// LINEARIZATION_TYPES_H

@@ -7,7 +7,6 @@
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
- *
  */
 
 //
@@ -38,7 +37,7 @@ void linearizeMonomial( const Function& dynamics, const Settings& settings, Line
 	// get: good linearization points for lower and upper approximation
 	auto linearizationPoint_oapprox = getLinearizationPoint( dynamics, settings, Approximation::OVER );
 	auto linearizationPoint_uapprox = getLinearizationPoint( dynamics, settings, Approximation::UNDER );
-	spdlog::trace( "Linearization points:  over-approx.: {}, under-approx.: {}", linearizationPoint_oapprox, linearizationPoint_uapprox );
+	spdlog::debug( "Linearization points:  convex: {}, concave: {}", linearizationPoint_uapprox, linearizationPoint_oapprox );
 
 	// do the relaxation in the chosen points
 	auto rel_oapprox = getRelaxationInPoint( dynamics, settings.domain, linearizationPoint_oapprox );
@@ -51,16 +50,16 @@ void linearizeMonomial( const Function& dynamics, const Settings& settings, Line
 	hypro::matrix_t<double> A = hypro::matrix_t<double>::Zero( 2, dim );
 	hypro::vector_t<double> b = hypro::vector_t<double>::Zero( 2 );
 
-	b( 0 ) = rel_uapprox.cv();
-	b( 1 ) = -rel_oapprox.cc();
+	b( 0 ) = -rel_uapprox.cv();
+	b( 1 ) = rel_oapprox.cc();
 	for ( int k = 0; k < dim; ++k ) {
-		A( 0, k ) = -rel_uapprox.cvsub( k );
-		A( 1, k ) = rel_oapprox.ccsub( k );
-		b( 0 ) += -rel_uapprox.cvsub( k ) * linearizationPoint_uapprox[k];
-		b( 1 ) += rel_oapprox.ccsub( k ) * linearizationPoint_oapprox[k];
+		A( 0, k ) = rel_uapprox.cvsub( k );
+		A( 1, k ) = -rel_oapprox.ccsub( k );
+		b( 0 ) += rel_uapprox.cvsub( k ) * linearizationPoint_uapprox[k];
+		b( 1 ) -= rel_oapprox.ccsub( k ) * linearizationPoint_oapprox[k];
 	}
 	result.initialCondition = hypro::Condition<double>( A, b );
-	spdlog::debug( "Computed affine relaxation {}", result.initialCondition );
+	spdlog::debug( "Computed affine relaxation\n{}", result.initialCondition );
 }
 
 template <typename Function>
