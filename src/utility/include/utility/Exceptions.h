@@ -21,6 +21,7 @@
 namespace utility
 {
 
+/// exception that indicates a missing implementation
 struct NotImplemented : public std::logic_error
 {
     NotImplemented(std::string msg = "")
