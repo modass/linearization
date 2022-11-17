@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(linearization VERSION 0.0.2)
+project(linearization)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
@@ -18,7 +18,6 @@ add_subdirectory(src/analysis)
 add_subdirectory(src/linearization)
 add_subdirectory(src/utility)
 add_subdirectory(src/tool)
-# add last, as the dependencies need to be linked to existing targets, which get defined in the previous includes
 add_subdirectory(dependencies)
 
 enable_testing()
