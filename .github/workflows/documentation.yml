@@ -20,6 +20,7 @@ concurrency:
   group: "pages"
   cancel-in-progress: true
 
+jobs:
   # Single deploy job since we're just deploying
   deploy:
     environment:
