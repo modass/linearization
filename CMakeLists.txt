@@ -10,15 +10,16 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+if (BUILD_DOC)
+    add_subdirectory(doc)
+endif ()
+
 add_subdirectory(src/analysis)
 add_subdirectory(src/linearization)
 add_subdirectory(src/utility)
 add_subdirectory(src/tool)
 # add last, as the dependencies need to be linked to existing targets, which get defined in the previous includes
 add_subdirectory(dependencies)
-if (BUILD_DOC)
-    add_subdirectory(doc)
-endif ()
 
 enable_testing()
 add_subdirectory(test)
