@@ -22,6 +22,8 @@ else ()
     enable_testing()
     add_subdirectory(test)
 
+    add_subdirectory(examples)
+
     if (COVERAGE)
         message(STATUS "Producing test coverage report")
         include(CodeCoverage)
