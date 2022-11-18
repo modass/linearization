@@ -55,7 +55,7 @@ jobs:
 
     - name: Dependencies - HyPro
       working-directory: ${{runner.workspace}}/dependencies/hypro
-      run: mkdir -p build && cd build && cmake .. && make hypro -j $(nproc)
+      run: mkdir -p build && cd build && cmake .. -DHYPRO_USE_MIMALLOC=OFF && make hypro -j $(nproc)
 
     - name: Configure cmake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
