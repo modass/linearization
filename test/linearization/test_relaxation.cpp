@@ -19,13 +19,15 @@
 
 namespace test::impl {
 
+/*
 template <typename N>
-struct constantMonomial {
+ struct constantMonomial {
 	N operator()( const std::vector<N>& in ) const {
 		N res = 0 * in[0] + 0 * in[1] + N( 2 );
 		return res;
 	}
 };
+
 
 template <typename N>
 struct quadraticMonomial {
@@ -35,6 +37,7 @@ struct quadraticMonomial {
 		return res;
 	}
 };
+ */
 
 }  // namespace test::impl
 
@@ -42,12 +45,15 @@ TEST( Relaxation, ConstantFunction ) {
 	using namespace linearization;
 	spdlog::set_level( spdlog::level::trace );
 
+	std::function<MC( std::vector<MC> )> constantMonomial = []( const std::vector<MC>& in ) {MC res = 0 * in[0] + 0 * in[1] + MC( 2 );
+		return res; };
+
 	Domain d{ { Interval{ 0, 10 }, Interval{ 0, 10 } } };
 	std::vector<std::size_t> subdivisions{ 5, 5 };
 	Settings s{ d, subdivisions };
 	LinearizationResult<double> result;
 	// call linearization, the result should contain two constraints which under- and over-approximate the monomial within the domain
-	linearizeMonomial( test::impl::constantMonomial<MC>(), s, result );
+	linearizeMonomial( constantMonomial, s, result );
 	// checks
 	EXPECT_TRUE( result.initialCondition.size() == 1 );
 	EXPECT_EQ( 2, result.initialCondition.getMatrix().rows() );
@@ -59,20 +65,23 @@ TEST( Relaxation, QuadraticFunction ) {
 	using namespace linearization;
 	spdlog::set_level( spdlog::level::debug );
 
+	std::function<MC( std::vector<MC> )> quadraticMonomial = []( const std::vector<MC>& in ) {MC res = pow( in[0], 2 ) - in[1];
+		return res; };
+
 	Domain d{ { Interval{ -2, 2 }, Interval{ 0, 4 } } };
 	std::vector<std::size_t> subdivisions{ 5, 5 };
 	Settings s{ d, subdivisions };
 
 	// test relaxation in specific points
 	{
-		auto res = getRelaxationInPoint( test::impl::quadraticMonomial<MC>(), d, Point{ 0, 0 } );
+		auto res = getRelaxationInPoint( quadraticMonomial, d, Point{ 0, 0 } );
 		EXPECT_EQ( 0, res.cv() );
 		EXPECT_EQ( 4, res.cc() );
 		EXPECT_EQ( 0, res.cvsub( 0 ) );
 		EXPECT_EQ( -1, res.cvsub( 1 ) );
 	}
 	{
-		auto res = getRelaxationInPoint( test::impl::quadraticMonomial<MC>(), d, Point{ 1, 0 } );
+		auto res = getRelaxationInPoint( quadraticMonomial, d, Point{ 1, 0 } );
 		EXPECT_EQ( 1, res.cv() );
 		EXPECT_EQ( 4, res.cc() );
 		EXPECT_EQ( 2, res.cvsub( 0 ) );
@@ -82,7 +91,7 @@ TEST( Relaxation, QuadraticFunction ) {
 	// test randomized relaxation
 	LinearizationResult<double> result;
 	// call linearization, the result should contain two constraints which under- and over-approximate the monomial within the domain
-	linearizeMonomial( test::impl::quadraticMonomial<MC>(), s, result );
+	linearizeMonomial( quadraticMonomial, s, result );
 	// checks
 	EXPECT_TRUE( result.initialCondition.size() == 1 );
 	EXPECT_EQ( 2, result.initialCondition.getMatrix().rows() );

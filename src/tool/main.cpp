@@ -7,59 +7,44 @@
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
- *
  */
 
-#include <iostream>
-#include <random>
-#include <stdlib.h>
-#include "../linearization/include/library.h"
+#include <CLI/App.hpp>
+#include <CLI/Config.hpp>
+#include <CLI/Formatter.hpp>
+#include <linearization/mcCormick.h>
+#include <linearization/types.h>
+#include <spdlog/spdlog.h>
 
+int main( int argc, char** argv ) {
+	using linearization::Domain;
+	using linearization::Interval;
+	using linearization::LinearizationResult;
+	using linearization::MC;
+	using linearization::Settings;
 
-using namespace std;
+	// CLI
+	CLI::App app{ "A tool for reachability analysis of non-linear dynamic systems via Carleman linearization." };
+	// app.add_option("-f,--file", filename, "Help-string");
+	CLI11_PARSE( app, argc, argv );
 
-int main() {
-    /*
-	double XL, XU, YL, YU;
-    XL=-1;
-    XU=1;  
-    
-    //Generation of a grid to subdivide the initial interval [XL,XU]\times[YL,YU] into subintervals to improve the accuracy of computed approximations.
-    int Xspace=2;
-    double Xstep=(XU-XL)/Xspace;
-    cout << "-" << Xstep << "-" << endl;
-    vector<double> arX;
-    for (int i = 0; i < Xspace+1; i++) {
-        arX.push_back(XL+i*Xstep);
-        cout << arX[i] << " ";
-    }
-  
-    YL=-2;
-    YU=2;
-    int Yspace=2;
-    double Ystep=(YU-YL)/Yspace;
-    cout << "-" << Ystep << "-" << endl;
-    vector<double> arY;
-    for (int i = 0; i < Yspace+1; i++) {
-        arY.push_back(YL+i*Ystep);
-        cout << arY[i] << " ";
-    }
-    
-    //variables used to save the extremes of each subinterval.
-    double xa,xb,ya,yb;
-    
-    //Compute the McCormick envelopes for each subinterval.
-    for (int i = 1; i < arY.size(); i++) {
-        ya=arY[i-1];
-        yb=arY[i];
-        for (int j = 1; j < arX.size(); j++) {
-            xa=arX[j-1];
-            xb=arX[j];
-            MCpp solver(xa,xb,ya,yb);
-            solver.do_relaxations();
-    }
-    }
-     */
+	// TODO perform Carleman linearization to obtain a set of monomials
 
-    return 0;
+	// convert to our data structures, which requires monomials to be a functor which takes a single vector as an input
+	std::vector<std::function<MC( std::vector<MC> )>>
+		  monomials;
+
+	// perform linearization for each monomial
+	for ( const auto& monomial : monomials ) {
+		LinearizationResult<double> linearization;
+		Settings linearization_settings;
+		Domain d{ { Interval{ -2, 2 }, Interval{ 0, 4 } } };
+		std::vector<std::size_t> subdivisions{ 5, 5 };
+	}
+
+	// construct linear system
+
+	// run reachability analysis
+
+	return 0;
 }

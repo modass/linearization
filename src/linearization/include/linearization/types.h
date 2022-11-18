@@ -29,6 +29,9 @@ using Index = Eigen::Index;
 using Interval = mc::Interval;
 using MC = mc::McCormick<Interval>;
 
+template <typename N, typename... Rargs>
+using Function = std::function<N( Rargs... )>();
+
 struct Domain {
 	std::vector<Interval> intervals;
 };
