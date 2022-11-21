@@ -13,6 +13,9 @@
  * Created by Stefan Schupp <stefan.schupp@tuwien.ac.at> on 18.11.22.
  */
 
+#include <CLI/App.hpp>
+#include <CLI/Config.hpp>
+#include <CLI/Formatter.hpp>
 #include <functional>
 #include <hypro/algorithms/reachability/Reach.h>
 #include <hypro/datastructures/HybridAutomaton/HybridAutomaton.h>
@@ -24,6 +27,22 @@
 #include <vector>
 
 int main( int argc, char** argv ) {
+	// Command line interface
+	double timeStepSize;
+	double timeHorizon = 10;
+	bool plot = false;
+
+	CLI::App cli;
+	cli.add_option( "-d, delta", timeStepSize, "Time step size used for reachability analysis" )->required()->check( CLI::PositiveNumber );
+	cli.add_option( "-t, timeHorizon", timeHorizon, "Time horizon used for reachability analysis" )->check( CLI::PositiveNumber );
+	cli.add_flag( "--plot", plot, "Set to create a plot of the set of reachable states projected to the first two dimensions" );
+	try {
+		cli.parse( argc, argv );
+	} catch ( const CLI::ParseError& e ) {
+		std::cout << cli.help() << std::endl;
+		return cli.exit( e );
+	}
+
 	// using declarations
 	using linearization::Domain;
 	using linearization::Interval;
@@ -129,23 +148,28 @@ int main( int argc, char** argv ) {
 	using Representation = hypro::SupportFunctionT<double, hypro::Converter<double>, hypro::NoBoxDetection>;
 	auto roots = hypro::makeRoots<Representation, double>( automaton );
 	// settings
-	hypro::FixedAnalysisParameters fixedParameters{ 1, 5 };
-	hypro::AnalysisParameters parameters{ 0.01 };
+	hypro::FixedAnalysisParameters fixedParameters{ 1, timeHorizon };
+	hypro::AnalysisParameters parameters{ timeStepSize };
 	hypro::reachability::Reach<Representation> reacher( automaton, fixedParameters, parameters, roots );
 
 	// invoke analysis
+	spdlog::info( "Start reachability analysis." );
 	reacher.computeForwardReachability();
 
 	// plot outputs
-	auto& plt = hypro::Plotter<double>::getInstance();
-	std::vector<std::size_t> plotDimensions{ 0, 1 };
-	plt.setFilename( "simple_example" );
-	plt.rSettings().overwriteFiles = false;
-	for ( const auto& node : hypro::preorder( roots ) ) {
-		for ( const auto& segment : node.getFlowpipe() ) {
-			plt.addObject( segment.projectOn( plotDimensions ).vertices() );
+	if ( plot ) {
+		spdlog::info( "Start plotting reachable sets." );
+		auto& plt = hypro::Plotter<double>::getInstance();
+		std::vector<std::size_t> plotDimensions{ 0, 1 };
+		plt.setFilename( "simple_example" );
+		plt.rSettings().overwriteFiles = false;
+		for ( const auto& node : hypro::preorder( roots ) ) {
+			for ( const auto& segment : node.getFlowpipe() ) {
+				plt.addObject( segment.projectOn( plotDimensions ).vertices() );
+			}
 		}
+		plt.plot2d( hypro::PLOTTYPE::png, true );
 	}
-	plt.plot2d( hypro::PLOTTYPE::png, true );
+	spdlog::info( "Computation finished, exiting." );
 	return 0;
 }
