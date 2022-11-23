@@ -13,6 +13,9 @@
  * Created by Stefan Schupp <stefan.schupp@tuwien.ac.at> on 18.11.22.
  */
 
+#include "simple_example_matrices.h"
+#include "simple_monomials.h"
+
 #include <CLI/App.hpp>
 #include <CLI/Config.hpp>
 #include <CLI/Formatter.hpp>
@@ -58,17 +61,7 @@ int main( int argc, char** argv ) {
 	const std::size_t z4 = 5;
 
 	// encode monomials as lambda functions
-	/*
-	Matrix([[x], [y], [x**2*y], [x*y**2], [x**4*y], [x**3]])
-	*/
-	std::function<MC( std::vector<MC> )> z1Monomial = []( const std::vector<MC>& in ) {MC res = pow( in[x], 2 ) * in[y] - in[z1] + 0*in[z2] + 0*in[z3] + 0*in[z4];
-		return res; };
-	std::function<MC( std::vector<MC> )> z2Monomial = []( const std::vector<MC>& in ) {MC res = pow( in[y], 2 ) * in[x] - in[z2] + 0*in[z1] + 0*in[z3] + 0*in[z4];
-		return res; };
-	std::function<MC( std::vector<MC> )> z3Monomial = []( const std::vector<MC>& in ) {MC res = pow( in[x], 4 ) * in[y] - in[z3] + 0*in[z1] + 0*in[z2] + 0*in[z4];
-		return res; };
-	std::function<MC( std::vector<MC> )> z4Monomial = []( const std::vector<MC>& in ) {MC res = pow( in[x], 3 ) - in[z4] + +0*in[y] + 0*in[z1] + 0*in[z2] + 0*in[z3];
-		return res; };
+	auto monomialVector = linearization::order3Monomials();
 
 	// settings for linearization
 	auto xInterval = Interval{ 1, 1.5 };
@@ -83,13 +76,13 @@ int main( int argc, char** argv ) {
 
 	// linearize
 	LinearizationResult<double> z1LinearizationResult;
-	linearization::linearizeMonomial( z1Monomial, s, z1LinearizationResult );
+	linearization::linearizeMonomial( monomialVector[0], s, z1LinearizationResult );
 	LinearizationResult<double> z2LinearizationResult;
-	linearization::linearizeMonomial( z2Monomial, s, z2LinearizationResult );
+	linearization::linearizeMonomial( monomialVector[1], s, z2LinearizationResult );
 	LinearizationResult<double> z3LinearizationResult;
-	linearization::linearizeMonomial( z3Monomial, s, z3LinearizationResult );
+	linearization::linearizeMonomial( monomialVector[2], s, z3LinearizationResult );
 	LinearizationResult<double> z4LinearizationResult;
-	linearization::linearizeMonomial( z4Monomial, s, z4LinearizationResult );
+	linearization::linearizeMonomial( monomialVector[3], s, z4LinearizationResult );
 
 	// combine initial constraints
 	auto initialCondition = hypro::Condition<double>{ z1LinearizationResult.initialCondition };
@@ -117,28 +110,8 @@ int main( int argc, char** argv ) {
 	auto automaton = hypro::HybridAutomaton<double>();
 	auto* loc = automaton.createLocation( "l0" );
 	// encode dynamics: x' = Ax + b
-	/* A:
-	[[ 0. -1.  0.  0.  0.  0.]
-	[ 1.  1.  0.  0.  0.  0.]
-	[ 0. -1.  1. -2.  0.  3.]
-	[ 0.  0.  2.  2.  0.  0.]
-	[ 0.  0. -1.  0.  1.  0.]
-	[ 0.  0. -1.  0.  0.  0.]]
-	 */
-	hypro::matrix_t<double> A = hypro::matrix_t<double>::Zero( 7, 7 );
-	A( 0, y ) = -1.0;
-	A( 1, x ) = 1.0;
-	A( 1, y ) = 1.0;
-	A( 2, y ) = -1.0;
-	A( 2, z1 ) = 1.0;
-	A( 2, z2 ) = -2.0;
-	A( 2, z4 ) = 3.0;
-	A( 3, z1 ) = 2.0;
-	A( 3, z2 ) = 2.0;
-	A( 4, z1 ) = -1.0;
-	A( 4, z3 ) = 1.0;
-	A( 5, z1 ) = -1.0;
-	loc->setFlow( hypro::linearFlow<double>( A ) );
+	auto A = linearization::order3();
+	loc->setFlow( hypro::linearFlow<double>( A.transpose() ) );
 
 	automaton.setInitialStates( { { loc, initialCondition } } );
 
@@ -146,11 +119,11 @@ int main( int argc, char** argv ) {
 
 	// set up reachability analysis
 	using Representation = hypro::SupportFunctionT<double, hypro::Converter<double>, hypro::NoBoxDetection>;
-	auto roots = hypro::makeRoots<Representation, double>( automaton );
+	auto roots = hypro::makeRoots<Representation, hypro::HybridAutomaton<double>>( automaton );
 	// settings
 	hypro::FixedAnalysisParameters fixedParameters{ 1, timeHorizon };
 	hypro::AnalysisParameters parameters{ timeStepSize };
-	hypro::reachability::Reach<Representation> reacher( automaton, fixedParameters, parameters, roots );
+	hypro::reachability::Reach<Representation, hypro::HybridAutomaton<double>> reacher( automaton, fixedParameters, parameters, roots );
 
 	// invoke analysis
 	spdlog::info( "Start reachability analysis." );
