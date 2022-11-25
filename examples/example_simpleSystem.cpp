@@ -63,10 +63,9 @@ int main( int argc, char** argv ) {
 	auto intervalMonomials = linearization::order5Monomials<Interval>();
 	std::vector<Interval> domains;
 	std::vector<Interval> initialDomains;
-	initialDomains.push_back( Interval{ 1, 1.5 } );
-	initialDomains.push_back( Interval{ 2, 2.45 } );
-	domains.push_back( Interval{ 1, 1.5 } );
-	domains.push_back( Interval{ 2, 2.45 } );
+	initialDomains.push_back( Interval{ 1, 1.1 } );
+	initialDomains.push_back( Interval{ 2, 2.1 } );
+	domains = initialDomains;
 	// push dummy value
 	for ( int i = numberSystemVariables; i < monomialVector.size(); ++i ) {
 		initialDomains.push_back( Interval{ 0, 0 } );
@@ -74,11 +73,10 @@ int main( int argc, char** argv ) {
 	std::transform( std::begin( intervalMonomials ), std::end( intervalMonomials ), std::back_inserter( domains ), [&initialDomains]( auto& f ) { return f( initialDomains ); } );
 	Domain d{ domains };
 
-	std::vector<std::size_t> subdivisions = std::vector<std::size_t>( numberSystemVariables, numberSubdivisions );
-	for ( int i = 0; i < monomialVector.size(); ++i ) {
-		subdivisions.push_back( 1 );
-	}
-	spdlog::info( "Have {} intervals and {} subdivisions", d.intervals.size(), subdivisions.size() );
+	std::vector<std::size_t> subdivisions = std::vector<std::size_t>( numberSystemVariables + monomialVector.size() );
+	std::fill_n( std::begin( subdivisions ), numberSystemVariables, numberSubdivisions );
+	std::fill_n( std::next( std::begin( subdivisions ), numberSystemVariables ), monomialVector.size(), 1 );
+
 	Settings s{ d, subdivisions };
 
 	// combine initial constraints
