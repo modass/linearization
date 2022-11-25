@@ -7,7 +7,6 @@
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
- *
  */
 
 /*
@@ -40,7 +39,7 @@ Point getLinearizationPoint( const Function& dynamics, const Settings& settings,
 	settings.setMcppSettings();
 
 	const auto& domain = settings.domain;
-	for ( int iteration = 0; iteration < 10; ++iteration ) {
+	for ( int iteration = 0; iteration < 50; ++iteration ) {
 		auto dim = domain.intervals.size();
 		/*set the point for which to compute the affine approximation (linearization point=(x_ref,y_ref)), sampling from a uniform distribution. The support for the considered uniform distribution is equal
 		to the initial interval given for each coordinate.*/

@@ -34,10 +34,13 @@ int main( int argc, char** argv ) {
 	double timeStepSize;
 	double timeHorizon = 10;
 	bool plot = false;
+	std::size_t numberSystemVariables = 2;
+	std::size_t numberSubdivisions = 5;
 
 	CLI::App cli;
 	cli.add_option( "-d, delta", timeStepSize, "Time step size used for reachability analysis" )->required()->check( CLI::PositiveNumber );
 	cli.add_option( "-t, timeHorizon", timeHorizon, "Time horizon used for reachability analysis" )->check( CLI::PositiveNumber );
+	cli.add_option( "-s, subdivisions", numberSubdivisions, "Number of grid points per dimension used to check the quality of the linearization when searching for a linearization point" )->check( CLI::PositiveNumber );
 	cli.add_flag( "--plot", plot, "Set to create a plot of the set of reachable states projected to the first two dimensions" );
 	try {
 		cli.parse( argc, argv );
@@ -52,56 +55,50 @@ int main( int argc, char** argv ) {
 	using linearization::LinearizationResult;
 	using linearization::MC;
 	using linearization::Settings;
-	// make readable names for variables
-	const std::size_t x = 0;
-	const std::size_t y = 1;
-	const std::size_t z1 = 2;
-	const std::size_t z2 = 3;
-	const std::size_t z3 = 4;
-	const std::size_t z4 = 5;
 
 	// encode monomials as lambda functions
-	auto monomialVector = linearization::order3Monomials();
+	auto monomialVector = linearization::order5Monomials<MC>();
 
 	// settings for linearization
-	auto xInterval = Interval{ 1, 1.5 };
-	auto yInterval = Interval{ 2, 2.45 };
-	auto z1Interval = pow( xInterval, 2 ) * yInterval;
-	auto z2Interval = pow( yInterval, 2 ) * xInterval;
-	auto z3Interval = pow( xInterval, 4 ) * yInterval;
-	auto z4Interval = pow( xInterval, 3 );
-	Domain d{ { xInterval, yInterval, z1Interval, z2Interval, z3Interval, z4Interval } };
-	std::vector<std::size_t> subdivisions{ 5, 5, 1, 1, 1, 1 };
+	auto intervalMonomials = linearization::order5Monomials<Interval>();
+	std::vector<Interval> domains;
+	std::vector<Interval> initialDomains;
+	initialDomains.push_back( Interval{ 1, 1.5 } );
+	initialDomains.push_back( Interval{ 2, 2.45 } );
+	domains.push_back( Interval{ 1, 1.5 } );
+	domains.push_back( Interval{ 2, 2.45 } );
+	// push dummy value
+	for ( int i = numberSystemVariables; i < monomialVector.size(); ++i ) {
+		initialDomains.push_back( Interval{ 0, 0 } );
+	}
+	std::transform( std::begin( intervalMonomials ), std::end( intervalMonomials ), std::back_inserter( domains ), [&initialDomains]( auto& f ) { return f( initialDomains ); } );
+	Domain d{ domains };
+
+	std::vector<std::size_t> subdivisions = std::vector<std::size_t>( numberSystemVariables, numberSubdivisions );
+	for ( int i = 0; i < monomialVector.size(); ++i ) {
+		subdivisions.push_back( 1 );
+	}
+	spdlog::info( "Have {} intervals and {} subdivisions", d.intervals.size(), subdivisions.size() );
 	Settings s{ d, subdivisions };
 
-	// linearize
-	LinearizationResult<double> z1LinearizationResult;
-	linearization::linearizeMonomial( monomialVector[0], s, z1LinearizationResult );
-	LinearizationResult<double> z2LinearizationResult;
-	linearization::linearizeMonomial( monomialVector[1], s, z2LinearizationResult );
-	LinearizationResult<double> z3LinearizationResult;
-	linearization::linearizeMonomial( monomialVector[2], s, z3LinearizationResult );
-	LinearizationResult<double> z4LinearizationResult;
-	linearization::linearizeMonomial( monomialVector[3], s, z4LinearizationResult );
-
 	// combine initial constraints
-	auto initialCondition = hypro::Condition<double>{ z1LinearizationResult.initialCondition };
-	initialCondition.addConstraints( z2LinearizationResult.initialCondition );
-	initialCondition.addConstraints( z3LinearizationResult.initialCondition );
-	initialCondition.addConstraints( z4LinearizationResult.initialCondition );
 	// add domain for x and y as well as a constraint system: constraints*x <= constants
-	{
-		hypro::matrix_t<double> constraints = hypro::matrix_t<double>::Zero( 4, 6 );
-		hypro::vector_t<double> constants = hypro::vector_t<double>::Zero( 4 );
-		constraints( 0, x ) = 1;
-		constants( 0 ) = xInterval.u();
-		constraints( 1, x ) = -1;
-		constants( 1 ) = -xInterval.l();
-		constraints( 2, y ) = 1;
-		constants( 2 ) = yInterval.u();
-		constraints( 3, y ) = -1;
-		constants( 3 ) = -yInterval.l();
-		initialCondition.addConstraints( { constraints, constants } );
+	hypro::matrix_t<double> constraints = hypro::matrix_t<double>::Zero( 2 * numberSystemVariables, numberSystemVariables + monomialVector.size() );
+	hypro::vector_t<double> constants = hypro::vector_t<double>::Zero( 2 * numberSystemVariables );
+	for ( int i = 0; i < numberSystemVariables; ++i ) {
+		constraints( i, i ) = 1;
+		constants( i ) = d.intervals[i].u();
+		constraints( i + 1, i ) = -1;
+		constants( i + 1 ) = -d.intervals[i].l();
+	}
+	auto initialCondition = hypro::Condition<double>{ constraints, constants };
+
+	// linearize
+	for ( auto& monomial : monomialVector ) {
+		LinearizationResult<double> linearizationResult;
+		linearization::linearizeMonomial( monomial, s, linearizationResult );
+		// add linearized initial sets for the other monomials
+		initialCondition.addConstraints( linearizationResult.initialCondition );
 	}
 
 	spdlog::info( "Have computed over-approximation of the initial set: {}", initialCondition );
@@ -110,7 +107,7 @@ int main( int argc, char** argv ) {
 	auto automaton = hypro::HybridAutomaton<double>();
 	auto* loc = automaton.createLocation( "l0" );
 	// encode dynamics: x' = Ax + b
-	auto A = linearization::order3();
+	auto A = linearization::order5();
 	loc->setFlow( hypro::linearFlow<double>( A.transpose() ) );
 
 	automaton.setInitialStates( { { loc, initialCondition } } );
