@@ -7,6 +7,7 @@
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+ *
  */
 
 /*
@@ -22,8 +23,11 @@
 #include <functional>
 #include <hypro/algorithms/reachability/Reach.h>
 #include <hypro/datastructures/HybridAutomaton/HybridAutomaton.h>
+#include <hypro/datastructures/HybridAutomaton/output/SpaceEx.h>
 #include <hypro/datastructures/reachability/ReachTreev2.h>
 #include <hypro/datastructures/reachability/Settings.h>
+#include <hypro/flags.h>
+#include <hypro/util/logging/Filewriter.h>
 #include <hypro/util/plotting/Plotter.h>
 #include <linearization/Conversion.h>
 #include <linearization/mcCormick.h>
@@ -57,10 +61,10 @@ int main( int argc, char** argv ) {
 	using linearization::Settings;
 
 	// encode monomials as lambda functions
-	auto monomialVector = linearization::order5Monomials<MC>();
+	auto monomialVector = linearization::order3Monomials<MC>();
 
 	// settings for linearization
-	auto intervalMonomials = linearization::order5Monomials<Interval>();
+	auto intervalMonomials = linearization::order3Monomials<Interval>();
 	std::vector<Interval> domains;
 	std::vector<Interval> initialDomains;
 	initialDomains.push_back( Interval{ 1, 1.1 } );
@@ -105,10 +109,18 @@ int main( int argc, char** argv ) {
 	auto automaton = hypro::HybridAutomaton<double>();
 	auto* loc = automaton.createLocation( "l0" );
 	// encode dynamics: x' = Ax + b
-	auto A = linearization::order5();
+	auto A = linearization::order3();
 	loc->setFlow( hypro::linearFlow<double>( A.transpose() ) );
 
 	automaton.setInitialStates( { { loc, initialCondition } } );
+
+#ifdef HYPRO_ENABLE_SPACEEX_OUTPUT
+	{
+		hypro::LockedFileWriter writer{ "model.xml" };
+		writer.clearFile();
+		writer << hypro::toSpaceExFormat( automaton );
+	}
+#endif
 
 	spdlog::info( "Have created hybrid automaton: {}", automaton );
 
