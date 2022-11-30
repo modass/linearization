@@ -58,16 +58,18 @@ int main( int argc, char** argv ) {
 	using linearization::LinearizationResult;
 	using linearization::MC;
 	using linearization::Settings;
+	using Representation = hypro::SupportFunctionT<double, hypro::Converter<double>, hypro::NoBoxDetection>;
+	// using Representation = hypro::Box<double>;
 
 	// encode monomials as lambda functions
-	auto monomialVector = linearization::order3Monomials<MC>();
+	auto monomialVector = linearization::order5Monomials<MC>();
 
 	// settings for linearization
-	auto intervalMonomials = linearization::order3Monomials<Interval>();
+	auto intervalMonomials = linearization::order5Monomials<Interval>();
 	std::vector<Interval> domains;
 	std::vector<Interval> initialDomains;
-	initialDomains.push_back( Interval{ 1, 1 } );
-	initialDomains.push_back( Interval{ 2, 2 } );
+	initialDomains.emplace_back( 1, 1 );
+	initialDomains.emplace_back( 2, 2 );
 	domains = initialDomains;
 	// push dummy value
 	for ( int i = numberSystemVariables; i < monomialVector.size(); ++i ) {
@@ -100,6 +102,7 @@ int main( int argc, char** argv ) {
 		linearization::linearizeMonomial( monomial, s, linearizationResult );
 		// add linearized initial sets for the other monomials
 		initialCondition.addConstraints( linearizationResult.initialCondition );
+		std::cout << "Have initial condition: " << linearizationResult.initialCondition.getMatrix() << " <= " << linearizationResult.initialCondition.getVector() << std::endl;
 	}
 
 	spdlog::info( "Have computed over-approximation of the initial set: {}", initialCondition );
@@ -108,7 +111,7 @@ int main( int argc, char** argv ) {
 	auto automaton = hypro::HybridAutomaton<double>();
 	auto* loc = automaton.createLocation( "l0" );
 	// encode dynamics: x' = Ax + b
-	auto A = linearization::order3();
+	auto A = linearization::order5();
 	loc->setFlow( hypro::linearFlow<double>( A.transpose() ) );
 
 	automaton.setInitialStates( { { loc, initialCondition } } );
@@ -128,7 +131,6 @@ int main( int argc, char** argv ) {
 	spdlog::info( "Have created hybrid automaton: {}", automaton );
 
 	// set up reachability analysis
-	using Representation = hypro::SupportFunctionT<double, hypro::Converter<double>, hypro::NoBoxDetection>;
 	auto roots = hypro::makeRoots<Representation, hypro::HybridAutomaton<double>>( automaton );
 	// settings
 	hypro::FixedAnalysisParameters fixedParameters{ 1, timeHorizon };

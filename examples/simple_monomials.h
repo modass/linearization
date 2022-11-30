@@ -41,29 +41,29 @@ template <typename Number>
 std::vector<std::function<Number( std::vector<Number> )>> order5Monomials() {
 	// Matrix([[x], [y], [x**2*y], [x*y**2], [x**4*y], [x**3], [x**6*y], [x**3*y**2], [y**3], [x**5], [x**2*y**3], [x**5*y**2], [x**7], [x**8*y]])
 	std::vector<std::function<Number( std::vector<Number> )>> result;
-	result.push_back( []( const std::vector<Number>& in ) {Number res = pow( in[0], 2 ) * in[1] + 0*in[2] + 0*in[3] + 0*in[4] + 0*in[5] + 0*in[6] + 0*in[7] + 0*in[8] + 0*in[9] + 0*in[10] + 0*in[11] + 0*in[12] + 0*in[13];
+	result.push_back( []( const std::vector<Number>& in ) {Number res = pow( in[0], 2 ) * in[1] - in[2] + 0*in[3] + 0*in[4] + 0*in[5] + 0*in[6] + 0*in[7] + 0*in[8] + 0*in[9] + 0*in[10] + 0*in[11] + 0*in[12] + 0*in[13];
 		return res; } );
-	result.push_back( []( const std::vector<Number>& in ) {Number res = in[0] * pow(in[1],2) + 0*in[2] + 0*in[3] + 0*in[4] + 0*in[5] + 0*in[6] + 0*in[7] + 0*in[8] + 0*in[9] + 0*in[10] + 0*in[11] + 0*in[12] + 0*in[13];
+	result.push_back( []( const std::vector<Number>& in ) {Number res = in[0] * pow(in[1],2) + 0*in[2]  - in[3] + 0*in[4] + 0*in[5] + 0*in[6] + 0*in[7] + 0*in[8] + 0*in[9] + 0*in[10] + 0*in[11] + 0*in[12] + 0*in[13];
 		return res; } );
-	result.push_back( []( const std::vector<Number>& in ) {Number res = pow( in[0], 4 ) * in[1] + 0*in[2] + 0*in[3] + 0*in[4] + 0*in[5] + 0*in[6] + 0*in[7] + 0*in[8] + 0*in[9] + 0*in[10] + 0*in[11] + 0*in[12] + 0*in[13];
+	result.push_back( []( const std::vector<Number>& in ) {Number res = pow( in[0], 4 ) * in[1] + 0*in[2] + 0*in[3] - in[4] + 0*in[5] + 0*in[6] + 0*in[7] + 0*in[8] + 0*in[9] + 0*in[10] + 0*in[11] + 0*in[12] + 0*in[13];
 		return res; } );
-	result.push_back( []( const std::vector<Number>& in ) {Number res = pow( in[0], 3 ) + 0*in[1] + 0*in[2] + 0*in[3] + 0*in[4] + 0*in[5] + 0*in[6] + 0*in[7] + 0*in[8] + 0*in[9] + 0*in[10] + 0*in[11] + 0*in[12] + 0*in[13];
+	result.push_back( []( const std::vector<Number>& in ) {Number res = pow( in[0], 3 ) + 0*in[1] + 0*in[2] + 0*in[3] + 0*in[4] - in[5] + 0*in[6] + 0*in[7] + 0*in[8] + 0*in[9] + 0*in[10] + 0*in[11] + 0*in[12] + 0*in[13];
 		return res; } );
-	result.push_back( []( const std::vector<Number>& in ) {Number res = pow( in[0], 6 ) * in[1] + 0*in[2] + 0*in[3] + 0*in[4] + 0*in[5] + 0*in[6] + 0*in[7] + 0*in[8] + 0*in[9] + 0*in[10] + 0*in[11] + 0*in[12] + 0*in[13];
+	result.push_back( []( const std::vector<Number>& in ) {Number res = pow( in[0], 6 ) * in[1] + 0*in[2] + 0*in[3] + 0*in[4] + 0*in[5] - in[6] + 0*in[7] + 0*in[8] + 0*in[9] + 0*in[10] + 0*in[11] + 0*in[12] + 0*in[13];
 		return res; } );
-	result.push_back( []( const std::vector<Number>& in ) {Number res = pow( in[0], 3 ) * pow(in[1],2) + 0*in[2] + 0*in[3] + 0*in[4] + 0*in[5] + 0*in[6] + 0*in[7] + 0*in[8] + 0*in[9] + 0*in[10] + 0*in[11] + 0*in[12] + 0*in[13];
+	result.push_back( []( const std::vector<Number>& in ) {Number res = pow( in[0], 3 ) * pow(in[1],2) + 0*in[2] + 0*in[3] + 0*in[4] + 0*in[5] + 0*in[6] - in[7] + 0*in[8] + 0*in[9] + 0*in[10] + 0*in[11] + 0*in[12] + 0*in[13];
 		return res; } );
-	result.push_back( []( const std::vector<Number>& in ) {Number res = 0*in[0] + pow(in[1],3) + 0*in[2] + 0*in[3] + 0*in[4] + 0*in[5] + 0*in[6] + 0*in[7] + 0*in[8] + 0*in[9] + 0*in[10] + 0*in[11] + 0*in[12] + 0*in[13];
+	result.push_back( []( const std::vector<Number>& in ) {Number res = 0*in[0] + pow(in[1],3) + 0*in[2] + 0*in[3] + 0*in[4] + 0*in[5] + 0*in[6] + 0*in[7] - in[8] + 0*in[9] + 0*in[10] + 0*in[11] + 0*in[12] + 0*in[13];
 		return res; } );
-	result.push_back( []( const std::vector<Number>& in ) {Number res = pow( in[0], 5 ) + 0*in[1] + 0*in[2] + 0*in[3] + 0*in[4] + 0*in[5] + 0*in[6] + 0*in[7] + 0*in[8] + 0*in[9] + 0*in[10] + 0*in[11] + 0*in[12] + 0*in[13];
+	result.push_back( []( const std::vector<Number>& in ) {Number res = pow( in[0], 5 ) + 0*in[1] + 0*in[2] + 0*in[3] + 0*in[4] + 0*in[5] + 0*in[6] + 0*in[7] + 0*in[8] - in[9] + 0*in[10] + 0*in[11] + 0*in[12] + 0*in[13];
 		return res; } );
-	result.push_back( []( const std::vector<Number>& in ) {Number res = pow( in[0], 2 ) * pow( in[1],3 ) + 0*in[2] + 0*in[3] + 0*in[4] + 0*in[5] + 0*in[6] + 0*in[7] + 0*in[8] + 0*in[9] + 0*in[10] + 0*in[11] + 0*in[12] + 0*in[13];
+	result.push_back( []( const std::vector<Number>& in ) {Number res = pow( in[0], 2 ) * pow( in[1],3 ) + 0*in[2] + 0*in[3] + 0*in[4] + 0*in[5] + 0*in[6] + 0*in[7] + 0*in[8] + 0*in[9] - in[10] + 0*in[11] + 0*in[12] + 0*in[13];
 		return res; } );
-	result.push_back( []( const std::vector<Number>& in ) {Number res = pow( in[0], 5 ) * pow( in[1],2 ) + 0*in[2] + 0*in[3] + 0*in[4] + 0*in[5] + 0*in[6] + 0*in[7] + 0*in[8] + 0*in[9] + 0*in[10] + 0*in[11] + 0*in[12] + 0*in[13];
+	result.push_back( []( const std::vector<Number>& in ) {Number res = pow( in[0], 5 ) * pow( in[1],2 ) + 0*in[2] + 0*in[3] + 0*in[4] + 0*in[5] + 0*in[6] + 0*in[7] + 0*in[8] + 0*in[9] + 0*in[10] - in[11] + 0*in[12] + 0*in[13];
 		return res; } );
-	result.push_back( []( const std::vector<Number>& in ) {Number res = pow( in[0], 7 ) + 0*in[1] + 0*in[2] + 0*in[3] + 0*in[4] + 0*in[5] + 0*in[6] + 0*in[7] + 0*in[8] + 0*in[9] + 0*in[10] + 0*in[11] + 0*in[12] + 0*in[13];
+	result.push_back( []( const std::vector<Number>& in ) {Number res = pow( in[0], 7 ) + 0*in[1] + 0*in[2] + 0*in[3] + 0*in[4] + 0*in[5] + 0*in[6] + 0*in[7] + 0*in[8] + 0*in[9] + 0*in[10] + 0*in[11] - in[12] + 0*in[13];
 		return res; } );
-	result.push_back( []( const std::vector<Number>& in ) {Number res = pow( in[0], 8 ) * in[1] + 0*in[2] + 0*in[3] + 0*in[4] + 0*in[5] + 0*in[6] + 0*in[7] + 0*in[8] + 0*in[9] + 0*in[10] + 0*in[11] + 0*in[12] + 0*in[13];
+	result.push_back( []( const std::vector<Number>& in ) {Number res = pow( in[0], 8 ) * in[1] + 0*in[2] + 0*in[3] + 0*in[4] + 0*in[5] + 0*in[6] + 0*in[7] + 0*in[8] + 0*in[9] + 0*in[10] + 0*in[11] + 0*in[12] - in[13];
 		return res; } );
 	return result;
 }
