@@ -7,7 +7,6 @@
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
- *
  */
 
 /*
@@ -67,8 +66,8 @@ int main( int argc, char** argv ) {
 	auto intervalMonomials = linearization::order3Monomials<Interval>();
 	std::vector<Interval> domains;
 	std::vector<Interval> initialDomains;
-	initialDomains.push_back( Interval{ 1, 1.1 } );
-	initialDomains.push_back( Interval{ 2, 2.1 } );
+	initialDomains.push_back( Interval{ 1, 1 } );
+	initialDomains.push_back( Interval{ 2, 2 } );
 	domains = initialDomains;
 	// push dummy value
 	for ( int i = numberSystemVariables; i < monomialVector.size(); ++i ) {
@@ -88,10 +87,10 @@ int main( int argc, char** argv ) {
 	hypro::matrix_t<double> constraints = hypro::matrix_t<double>::Zero( 2 * numberSystemVariables, numberSystemVariables + monomialVector.size() );
 	hypro::vector_t<double> constants = hypro::vector_t<double>::Zero( 2 * numberSystemVariables );
 	for ( int i = 0; i < numberSystemVariables; ++i ) {
-		constraints( i, i ) = 1;
-		constants( i ) = d.intervals[i].u();
-		constraints( i + 1, i ) = -1;
-		constants( i + 1 ) = -d.intervals[i].l();
+		constraints( 2 * i, i ) = 1;
+		constants( 2 * i ) = d.intervals[i].u();
+		constraints( 2 * i + 1, i ) = -1;
+		constants( 2 * i + 1 ) = -d.intervals[i].l();
 	}
 	auto initialCondition = hypro::Condition<double>{ constraints, constants };
 
@@ -116,9 +115,13 @@ int main( int argc, char** argv ) {
 
 #ifdef HYPRO_ENABLE_SPACEEX_OUTPUT
 	{
-		hypro::LockedFileWriter writer{ "model.xml" };
-		writer.clearFile();
-		writer << hypro::toSpaceExFormat( automaton );
+		hypro::LockedFileWriter xmlWriter{ "model.xml" };
+		xmlWriter.clearFile();
+		hypro::LockedFileWriter cfgWriter{ "config.cfg" };
+		cfgWriter.clearFile();
+		auto [xml, config] = hypro::toSpaceExFormat( automaton );
+		xmlWriter << xml;
+		cfgWriter << config;
 	}
 #endif
 
